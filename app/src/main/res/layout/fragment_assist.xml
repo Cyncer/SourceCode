@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.fragment.HomeFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context="com.fragment.HomeFragment">
+
+
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+
+
+            <com.google.android.gms.maps.MapView
+                android:id="@+id/mapview"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:background="#fff"></com.google.android.gms.maps.MapView>
+
+            <RelativeLayout
+                android:id="@+id/rlSpinner"
+                android:layout_width="50dp"
+              android:layout_alignParentRight="true"
+                android:padding="3dp"
+                android:layout_height="wrap_content">
+
+
+                <ImageView
+                    android:id="@+id/imgFilter"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+
+
+                    android:layout_alignParentRight="true"
+                    android:src="@mipmap/ic_my_filter"
+                    />
+
+                <ImageView
+                    android:id="@+id/imgMyFilter"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_below="@+id/imgFilter"
+
+                    android:visibility="gone"
+                    android:layout_alignParentRight="true"
+                    android:src="@mipmap/ic_my_location"
+                    />
+
+
+                <ImageView
+                    android:id="@+id/imgMyLocation"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_below="@+id/imgMyFilter"
+
+                    android:onClick="sButton"
+                    android:src="@mipmap/ic_my_location" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:weightSum="3"
+                    android:visibility="gone"
+
+                    android:gravity="center"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/imgFilter"
+
+
+                    >
+
+                    <com.rey.material.widget.Spinner
+                        android:id="@+id/spinnerMake"
+                        style="@style/spinnerMaterialStyleNew"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="45dp"
+                        android:minHeight="35dp"
+                        android:layout_marginLeft="1dp"
+                        android:layout_marginRight="1dp"
+                        app:rd_style="@style/spinnerMaterialStyleNew"
+                        app:spn_label="UserType" />
+
+
+                    <com.rey.material.widget.Spinner
+                        android:id="@+id/spinnerYear"
+                        style="@style/spinnerMaterialStyleNew"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="45dp"
+
+
+                        android:minHeight="35dp"
+                        android:layout_marginLeft="1dp"
+                        android:layout_marginRight="1dp"
+                        app:rd_style="@style/spinnerMaterialStyleNew"
+
+                        app:spn_label="UserType" />
+
+
+                    <com.rey.material.widget.Spinner
+                        android:id="@+id/spinnerModel"
+                        style="@style/spinnerMaterialStyleNew"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="1dp"
+                        android:layout_marginRight="1dp"
+                        android:minHeight="35dp"
+                        app:rd_style="@style/spinnerMaterialStyleNew"
+
+                        app:spn_label="UserType" />
+
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+
+
+        </RelativeLayout>
+    </LinearLayout>
+
+
+</RelativeLayout>

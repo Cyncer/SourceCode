@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dialog_add"
+    android:layout_width="match_parent"
+
+    android:background="#CC000000"
+    android:padding="25dp"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+
+
+    <ImageView
+        android:id="@+id/imgClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close"
+        android:layout_gravity="center|right"
+        android:layout_alignParentRight="true"
+        android:padding="15dp"
+        android:layout_above="@+id/dialog_container"
+        />
+
+
+    <LinearLayout
+        android:id="@+id/dialog_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:layout_centerInParent="true"
+        android:padding="15dp">
+
+
+
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:gravity="center|left"
+            android:textColor="@color/grey_colorRipple"
+            android:text="RIDE NAME"
+            android:textSize="14dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txttRideName"
+
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:background="@android:color/transparent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="10dp"
+            android:textColor="@color/black"
+            android:drawableLeft="@drawable/ic_ride_name_small"
+            android:elevation="4dp"
+
+             />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="RIDE TYPE"
+                        android:textSize="14dp"
+                        android:textColor="@color/grey_colorRipple"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtRideType"
+                          android:layout_marginTop="5dp"
+                        android:layout_width="match_parent"
+                        android:textColor="@color/black"
+                        android:layout_height="wrap_content"
+                        android:elevation="4dp"
+                           />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="DISTANCE"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtDistance"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+
+                        android:gravity="center|left"
+
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="RIDE DIFFICULTY"
+                        android:textSize="14dp"
+                        android:textColor="@color/grey_colorRipple"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtRideDifficulty"
+                        android:layout_marginTop="5dp"
+                        android:layout_width="match_parent"
+                        android:textColor="@color/black"
+                        android:layout_height="wrap_content"
+                        android:elevation="4dp"
+                         />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="DURATION"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtDuration"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+
+                        android:gravity="center|left"
+
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="TOP SPEED"
+                        android:textSize="14dp"
+                        android:textColor="@color/grey_colorRipple"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtTopSpeed"
+                        android:layout_marginTop="5dp"
+                        android:layout_width="match_parent"
+                        android:textColor="@color/black"
+                        android:layout_height="wrap_content"
+                        android:elevation="4dp"
+                         />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="AVG SPEED"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtAvgSpeed"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+
+                        android:gravity="center|left"
+
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <com.rey.material.widget.Button
+                android:id="@+id/btnRide"
+                style="@style/LightRaiseButtonRippleStyle"
+                android:layout_width="0dp"
+
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:background="@color/grey_colorRipple"
+                android:text="RIDE"
+                android:textColor="@color/white"
+                app:rd_style="@style/LightRaiseButtonRippleStyle" />
+
+            <com.rey.material.widget.Button
+                android:id="@+id/btnShare"
+                style="@style/LightRaiseButtonRippleStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="SHARE"
+                android:textColor="#FFFFFF"
+                app:rd_style="@style/LightRaiseButtonRippleStyle" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="#eb3838"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_delete"/>
+
+        <com.rey.material.widget.Button
+            android:id="@+id/btnDeleteRide"
+
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+           android:layout_marginLeft="10dp"
+            android:background="@android:color/transparent"
+            android:text="DELETE THIS RIDE"
+            android:textColor="@color/white"
+            />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

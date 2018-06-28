@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary_black">#0C0C0C</color>
+    <color name="colorPrimaryDark_black">#080808</color>
+    <color name="colorAccent">#000000</color>
+    <color name="colorAccentOrange">#ffd186</color>
+    <color name="colorRipple_black">#CB0C0C0C</color>
+    <color name="light_gray">#292929</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="grey_colorRipple">#E7515050</color>
+    <color name="black">#16130f</color>
+    <color name="grey_dark">#e71e1e1e</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="fb_colorRipple">#FF6389F4</color>
+    <color name="unfriend_color">#05f523</color>
+    <color name="mentions_default_color">#f16421</color>
+
+    <color name="orange">#f16421</color>
+    <color name="orange_faded">#80f16421</color>
+    <color name="grey_light">#f3f3f3</color>
+    <color name="grey">#999999</color>
+</resources>

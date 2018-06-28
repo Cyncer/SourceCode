@@ -1,0 +1,166 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:orientation="vertical">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="#60000000"
+        android:fillViewport="false">
+
+        <com.rey.material.widget.LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="30dp"
+            android:paddingTop="30dp">
+
+            <RelativeLayout
+                android:id="@+id/rlIcon"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/logo" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/llLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlIcon"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp">
+
+                <com.customwidget.materialEditText
+                    android:id="@+id/login_email"
+                    style="@style/avtMaterialEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/mail_icon"
+                    android:lines="1"
+                    android:elevation="4dp"
+                    android:hint="Email Address"
+                    android:inputType="textEmailAddress" />
+                <com.customwidget.materialEditText
+                    android:id="@+id/login_password"
+                    style="@style/avtMaterialEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lines="1"
+                    android:drawableLeft="@drawable/password_icon"
+                    android:elevation="4dp"
+                    android:singleLine="true"
+                    android:hint="@string/password"
+                     />
+
+                <com.rey.material.widget.TextView
+                    android:id="@+id/tvForgot"
+                    style="@style/itemMaterialRippalWaveStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_gravity="right"
+                    android:paddingBottom="10dp"
+
+                    android:textColor="@color/white"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="10dp"
+                    android:text="Forgot Password?"
+                    android:textSize="14dp" />
+
+                <com.rey.material.widget.Button
+                    android:id="@+id/login_btn"
+                    style="@style/itemMaterialRippalWaveStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="10dp"
+                    android:elevation="4dp"
+                    android:background="@color/colorPrimaryDark_black"
+                    android:text="LOGIN"
+                    android:textColor="#FFFFFF" />
+
+                <LinearLayout
+                    android:id="@+id/forgotContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="1dp"
+                        android:layout_marginRight="5dp"
+                        android:background="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:gravity="center"
+                        android:text="OR"
+                        android:textColor="@color/white"
+                        android:textSize="18dp" />
+
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="1dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@color/white" />
+                </LinearLayout>
+
+                <com.rey.material.widget.Button
+                    android:id="@+id/facbook_btn"
+                    style="@style/fbMaterialRippalWaveStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="20dp"
+                    android:elevation="4dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/fb_btn" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_below="@+id/llLogin"
+                android:gravity="center_horizontal|bottom"></LinearLayout>
+
+        </com.rey.material.widget.LinearLayout>
+    </ScrollView>
+
+    <com.rey.material.widget.Button
+        android:id="@+id/reg_btn"
+        style="@style/itemMaterialRippalWaveStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textSize="15dp"
+        android:gravity="center"
+        android:ems="10"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorPrimaryDark_black"
+        android:text="@string/txt_register"
+        android:textColor="#FFFFFF"
+         />
+
+
+</RelativeLayout>

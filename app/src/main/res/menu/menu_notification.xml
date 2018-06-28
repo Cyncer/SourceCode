@@ -1,0 +1,31 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+
+    <!--<item android:id="@+id/list_delete"
+        android:title="@string/action_delete"
+        android:orderInCategory="100"
+        android:icon="@mipmap/ic_delete"
+        app:showAsAction="always"
+        android:visible="false" />
+-->
+
+    <!--<item
+        android:id="@+id/item_delete"
+        android:icon="@android:drawable/ic_menu_delete"
+        app:showAsAction="ifRoom|withText"
+        android:title="Delete"
+        android:titleCondensed="Delete">
+    </item>
+-->
+
+    <item android:id="@+id/action_clear"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        android:icon="@drawable/clear_button"
+        app:showAsAction="always" />
+
+
+</menu>

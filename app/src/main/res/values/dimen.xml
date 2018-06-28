@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_drawer_width">280dp</dimen>
+    <dimen name="ll_activity_horizontal_margin">16dp</dimen>
+    <dimen name="ll_activity_vertical_margin">16dp</dimen>
+    <dimen name="map_marker_diameter">128dp</dimen>
+</resources>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    tools:context="com.app.android.cync.ChatActivity">
+
+        <RelativeLayout
+            android:id="@+id/rlTitle"
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="@color/colorPrimary_black">
+
+            <ImageView
+                android:id="@+id/chat_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:padding="10dp"
+                android:src="@drawable/back" />
+
+            <TextView
+                android:id="@+id/chat_toolbar_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_centerInParent="true"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:id="@+id/chat_img"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="center"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/no_image" />
+        </RelativeLayout>
+
+
+    <!--&gt;-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/chat_toolbar_title"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="center"-->
+    <!--android:text="Toolbar Title"-->
+    <!--android:textColor="@color/white"-->
+    <!--android:textSize="18dp" />-->
+
+
+    <!--<ImageView-->
+    <!--android:id="@+id/chat_back"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="left"-->
+    <!--android:padding="10dp"-->
+    <!--android:src="@drawable/back" />-->
+
+    <!--<FrameLayout-->
+    <!--android:layout_width="50dp"-->
+    <!--android:layout_height="50dp"-->
+    <!--android:layout_gravity="right"-->
+    <!--android:layout_margin="5dp"-->
+    <!--android:foregroundGravity="center">-->
+
+    <!--<ImageView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_gravity="center"-->
+    <!--android:src="@drawable/img_box"-->
+    <!--/>-->
+    <!--<ImageView
+        android:id="@+id/chat_img"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:src="@drawable/no_image"
+        />-->
+
+    <!--</FrameLayout>-->
+    <!---->
+
+    <!---->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/rlSend"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:background="@drawable/search_bg_img">
+
+                <EditText
+                    android:id="@+id/edtText"
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="5sp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5sp"
+                    android:layout_weight="1"
+                    android:theme="@style/MyEditTextTheme"
+                    android:background="@drawable/text_box"
+                    android:textCursorDrawable="@drawable/cursor_white"
+                    android:hint="Write a message."
+                    android:padding="5sp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#FFFFFF" />
+
+                <TextView
+                    android:id="@+id/btnSend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:onClick="sendMessage"
+                    android:padding="5dp"
+                    android:text="SEND"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16dp"
+
+
+                    />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/myList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/rlSend"
+                android:layout_margin="5dp"
+                android:clickable="false"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:listSelector="@android:color/transparent"
+                android:paddingBottom="3dp"
+                android:stackFromBottom="true" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</LinearLayout>

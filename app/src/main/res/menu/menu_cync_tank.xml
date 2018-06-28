@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+    <item android:id="@+id/addNewTank"
+        android:title="@string/action_add_new"
+        android:orderInCategory="100"
+        android:icon="@drawable/edit_icon"
+        app:showAsAction="always" />
+</menu>

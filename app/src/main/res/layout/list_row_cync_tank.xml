@@ -1,0 +1,292 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lllMain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <RelativeLayout
+            android:id="@+id/rlTmp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <ImageView
+
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_alignParentLeft="true"
+
+                android:layout_margin="5dp"
+
+                android:background="#000000"
+                android:padding="1dp" />
+
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+
+                android:layout_alignParentLeft="true"
+                android:layout_margin="6dp"
+
+                android:background="#ffffff"
+
+                android:src="@drawable/nobnner" />
+
+
+            <TextView
+                android:id="@+id/txtName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/imgEdit"
+                android:layout_toRightOf="@+id/imgProfile"
+                android:ellipsize="end"
+                android:lines="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:text="John  Doe"
+                android:textStyle="bold" />
+
+
+            <TextView
+                android:id="@+id/txtTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtName"
+                android:layout_toLeftOf="@+id/imgEdit"
+                android:layout_toRightOf="@+id/imgProfile"
+                android:ellipsize="end"
+                android:lines="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="10dp"
+                android:paddingTop="2dp"
+                android:text="John  Doe"
+                android:textSize="12sp" />
+
+
+            <ImageView
+                android:id="@+id/imgEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_centerVertical="true"
+
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@+id/imgMenuOption"
+
+                android:padding="10dp"
+                android:src="@drawable/edit_black" />
+
+            <ImageView
+                android:id="@+id/imgMenuOption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+
+
+                android:layout_centerVertical="true"
+                android:padding="10dp"
+                android:src="@drawable/more" />
+
+
+        </RelativeLayout>
+
+
+        <TextView
+            android:id="@+id/txtDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rlTmp"
+            android:layout_marginBottom="5dp"
+
+            android:textColor="#000000"
+            android:paddingLeft="7dp"
+            android:paddingBottom="7dp"
+            android:autoLink="web"
+            android:textColorLink="#0000ff"
+            android:paddingRight="7dp"
+            android:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown"
+            android:textIsSelectable="true"
+            android:textSize="12sp"
+            android:visibility="visible" />
+
+
+        <RelativeLayout
+            android:id="@+id/rlVideo"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+
+            android:layout_below="@+id/txtDesc">
+
+
+            <FrameLayout
+
+                android:id="@+id/fl_video"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+
+                android:background="#000000"
+                android:gravity="center"
+                android:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/iv_thmbnail"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:src="@drawable/cyncing"
+
+                    android:background="#ffffff"
+                    android:scaleType="centerCrop"
+                    android:visibility="visible" />
+
+
+                <ImageView
+                    android:id="@+id/iv_play"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="10dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/btn_play"
+                    android:visibility="visible" />
+            </FrameLayout>
+
+        </RelativeLayout>
+
+
+        <TextView
+            android:id="@+id/txtNoLike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/rlVideo"
+            android:drawableLeft="@drawable/small_liked"
+            android:drawablePadding="5dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:lines="1"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:text="32 people likes"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+
+        <TextView
+            android:id="@+id/txtNoComments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/rlVideo"
+            android:drawableLeft="@drawable/small_comment"
+            android:drawablePadding="5dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:lines="1"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
+            android:text="12 comments"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2px"
+            android:background="#000000"
+            />
+        <RelativeLayout
+            android:id="@+id/rlLikeView"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_below="@+id/txtNoLike"
+
+            android:background="#000000"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+
+            >
+
+            <Button
+                android:id="@+id/btnLike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_alignParentLeft="true"
+
+                android:layout_centerVertical="true"
+
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/like"
+
+                android:drawablePadding="10dp"
+                android:gravity="center|left"
+                android:lines="1"
+                android:text="Like"
+                android:textAllCaps="false"
+
+                android:textColor="#ffffff"
+                android:textSize="12sp" />
+
+
+            <Button
+                android:id="@+id/btnComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+
+                android:layout_alignParentRight="true"
+
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/comment_fill"
+                android:drawablePadding="10dp"
+                android:gravity="center|left"
+
+                android:lines="1"
+                android:text="Comment"
+                android:textAllCaps="false"
+
+                android:textColor="#ffffff"
+                android:textSize="12sp" />
+
+
+            <Button
+                android:id="@+id/btnViewMore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_alignParentRight="true"
+
+                android:layout_centerVertical="true"
+                android:background="@android:color/transparent"
+
+                android:drawablePadding="5dp"
+
+                android:gravity="center|right"
+                android:lines="1"
+
+                android:text="View More"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+
+
+</LinearLayout>

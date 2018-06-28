@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <RelativeLayout
+        android:id="@+id/rlTmp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+
+        <ImageView
+            android:id="@+id/imgCLick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+
+            android:layout_alignParentRight="true"
+            android:visibility="visible"
+
+            android:padding="10dp"
+            android:src="@drawable/more" />
+
+
+        <ImageView
+
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="#000000"
+
+            android:layout_alignParentLeft="true"
+
+            android:layout_margin="5dp"
+            android:padding="2dp"
+            />
+        <ImageView
+            android:id="@+id/imgProfile"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+
+            android:background="#ffffff"
+            android:layout_alignParentLeft="true"
+
+            android:layout_margin="7dp"
+
+            android:src="@drawable/nobnner" />
+
+
+
+        <TextView
+            android:id="@+id/txtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/imgEdit"
+            android:layout_toRightOf="@+id/imgProfile"
+            android:ellipsize="end"
+            android:lines="1"
+            android:paddingLeft="5dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            android:text="John  Doe"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtName"
+            android:textIsSelectable="true"
+            android:layout_toRightOf="@+id/imgProfile"
+            android:paddingLeft="5dp"
+            android:paddingRight="10dp"
+            android:layout_marginTop="3dp"
+            android:autoLink="web"
+            android:textColorLink="#0000ff"
+            android:text="John  Doe"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/txtTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtComment"
+            android:layout_marginTop="3dp"
+            android:layout_toRightOf="@+id/imgProfile"
+            android:ellipsize="end"
+            android:lines="1"
+            android:paddingLeft="5dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="5dp"
+            android:text="John  Doe"
+            android:textSize="12sp" />
+
+
+
+
+
+
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+
+        android:background="#242424"/>
+
+</LinearLayout>

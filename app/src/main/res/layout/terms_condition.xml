@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--<android.support.v7.widget.CardView
+    android:id="@+id/cvmain"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_below="@+id/tvUsername"
+    android:elevation="4dp">-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <com.rey.material.widget.CheckBox
+            android:id="@+id/chkTrems"
+            style="@style/checkboxMaterial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="5dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical">
+        <TextView
+            android:id="@+id/txtTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/friendIcon"
+            android:gravity="left"
+            android:paddingTop="10dp"
+            android:text="I agree to the Cync App "
+            android:textColor="@color/colorPrimaryDark_black"
+            android:textSize="15dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtTermsCondition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/friendIcon"
+            android:gravity="left"
+            android:layout_marginLeft="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="#FF070FEA"
+            android:textSize="15dp"
+            android:textStyle="bold" />
+            </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <com.rey.material.widget.Button
+            android:id="@+id/btnSave"
+            style="@style/itemMaterialRippalWaveStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/grey_colorRipple"
+            android:elevation="4dp"
+            android:text="DISAGREE"
+            android:textColor="#FFFFFF" />
+
+        <com.rey.material.widget.Button
+            android:id="@+id/btnSeeMap"
+            style="@style/itemMaterialRippalWaveStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark_black"
+            android:elevation="4dp"
+            android:text="AGREE"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+</LinearLayout><!--
+</android.support.v7.widget.CardView>-->

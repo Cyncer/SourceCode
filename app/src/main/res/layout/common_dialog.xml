@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:layout_marginLeft="50dp"
+    android:layout_marginRight="50dp"
+    android:padding="30dp"
+    android:orientation="vertical"
+    android:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/tvTitel1"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/colorPrimary_black"
+            android:textSize="15dp"
+             />
+
+        <TextView
+            android:id="@+id/tvTitel2"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/colorPrimary_black"
+            android:textSize="15dp"
+             />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center|bottom"
+        android:weightSum="1">
+
+        <com.rey.material.widget.Button
+            android:id="@+id/no_btn"
+            style="@style/itemMaterialRippalWaveStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NO"
+            android:textColor="@color/white"
+            android:background="@color/colorAccent"
+             />
+
+
+        <com.rey.material.widget.Button
+            android:id="@+id/yes_btn"
+            style="@style/itemMaterialRippalWaveStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="YES"
+            android:textColor="@color/white"
+            android:background="@color/colorPrimary_black"
+             />
+
+    </LinearLayout>
+
+</LinearLayout>

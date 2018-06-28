@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dialog_add"
+    android:layout_width="match_parent"
+
+    android:background="#CC000000"
+    android:padding="25dp"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+
+
+    <ImageView
+        android:id="@+id/imgClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close"
+        android:layout_gravity="center|right"
+        android:layout_alignParentRight="true"
+        android:padding="15dp"
+        android:layout_above="@+id/dialog_container"
+        />
+
+
+    <LinearLayout
+        android:id="@+id/dialog_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:layout_centerInParent="true"
+        android:padding="15dp">
+
+
+
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:gravity="center|left"
+            android:textColor="@color/grey_colorRipple"
+            android:text="RIDE NAME"
+            android:textSize="14dp"
+            android:textStyle="bold" />
+
+        <com.customwidget.materialEditText
+            android:id="@+id/edtRideName"
+            style="@style/avtMaterialEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_ride_name_small"
+            android:elevation="4dp"
+            android:hint="Ride Name*"
+            android:inputType="text" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="RIDE TYPE"
+                        android:textSize="14dp"
+                        android:textColor="@color/grey_colorRipple"
+                        android:textStyle="bold" />
+
+                    <CheckBox
+                        android:id="@+id/chkDirt"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:textColor="@color/black"
+                        android:paddingLeft="10dp"
+                        android:layout_marginTop="10dp"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:text="Dirt" />
+
+                    <CheckBox
+                        android:id="@+id/chkSports"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@color/black"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:paddingLeft="10dp"
+                        android:text="Sports" />
+
+                    <CheckBox
+                        android:id="@+id/chkCruiser"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@color/black"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:paddingLeft="10dp"
+                        android:text="Cruiser" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="DISTANCE"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtDistance"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="50km"
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center|left"
+                        android:text="DURATION"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtDuration"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="1.5hr"
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:weightSum="2">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:textColor="@color/grey_colorRipple"
+                        android:gravity="center|left"
+                        android:text="RIDE DIFFICULTY"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+                    <RadioButton
+                        android:id="@+id/chkBeginner"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="10dp"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:text="Beginner" />
+
+                    <RadioButton
+                        android:id="@+id/chkIntermediate"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@color/black"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:text="Intermediate" />
+
+                    <RadioButton
+                        android:id="@+id/chkDCruiser"
+                        style="@style/checkboxMaterial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="10dp"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@color/black"
+                        android:button="@drawable/checkbox_background"
+                        android:gravity="center"
+                        android:text="Experienced" />
+                    </RadioGroup>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="vertical">
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:textColor="@color/grey_colorRipple"
+                        android:gravity="center|left"
+                        android:text="TOP SPEED"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtTopSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="150kph"
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+
+                    <TextView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/grey_colorRipple"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center|left"
+                        android:text="AVG SPEED"
+                        android:textSize="14dp"
+                        android:textStyle="bold" />
+
+
+                    <TextView
+                        android:id="@+id/txtAvgSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="10dp"
+                        android:gravity="center|left"
+                        android:text="85kph"
+                        android:textColor="@color/black"
+
+                        android:textSize="14dp" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <com.rey.material.widget.Button
+                android:id="@+id/btnSave"
+                style="@style/LightRaiseButtonRippleStyle"
+                android:layout_width="0dp"
+
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:background="@color/grey_colorRipple"
+                android:text="SAVE"
+                android:textColor="@color/white"
+                app:rd_style="@style/LightRaiseButtonRippleStyle" />
+
+            <com.rey.material.widget.Button
+                android:id="@+id/btnShare"
+                style="@style/LightRaiseButtonRippleStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:text="SHARE"
+                android:textColor="#FFFFFF"
+                app:rd_style="@style/LightRaiseButtonRippleStyle" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

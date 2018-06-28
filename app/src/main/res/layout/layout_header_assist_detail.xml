@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+
+
+    android:paddingTop="10dp">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:minWidth="130dp"
+            android:maxLength="18"
+            android:gravity="top|left"
+            android:text="Name : "
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+
+            android:gravity="top|left"
+            
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:layout_marginTop="5dp"
+
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+            android:minWidth="130dp"
+            android:gravity="top|left"
+            android:text="Category : "
+            android:textStyle="bold"
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+            android:gravity="top|left"
+            android:textColor="@color/colorPrimary_black"
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:minWidth="130dp"
+            android:textStyle="bold"
+            android:gravity="top|left"
+            android:text="Address : "
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+
+            android:gravity="top|left"
+            
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblContactNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:minWidth="130dp"
+            android:maxLength="18"
+            android:textStyle="bold"
+            android:gravity="top|left"
+            android:text="Contact Number : "
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtContactNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+
+            android:gravity="top|left"
+           
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:minWidth="130dp"
+            android:textStyle="bold"
+            android:gravity="top|left"
+            android:text="Email : "
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+
+            android:gravity="top|left"
+            
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="15dp"
+        android:weightSum="2">
+
+        <TextView
+            android:id="@+id/lblDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+            android:minWidth="130dp"
+            android:gravity="top|left"
+            android:text="Description : "
+            android:textStyle="bold"
+
+            android:textColor="@color/colorPrimary_black"
+
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+            android:gravity="top|left"
+            android:textColor="@color/colorPrimary_black"
+            android:textSize="15sp" />
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="3"
+        android:visibility="gone"
+        android:background="#000"
+        android:minHeight="35dp"
+        >
+
+
+        <TextView
+            android:id="@+id/MakeName"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="#ffffff"
+
+            android:textSize="15sp"
+
+            android:text="MAKE" />
+
+        <View
+            android:layout_width="1dp"
+            android:background="#ffffff"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/YearName"
+            android:layout_width="0dp"
+            android:layout_weight="0.7"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textColor="#ffffff"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="15sp"
+
+            android:text="YEAR" />
+
+        <View
+            android:layout_width="1dp"
+            android:background="#ffffff"
+            android:layout_height="match_parent"/>
+
+
+        <TextView
+            android:id="@+id/ModelName"
+            android:layout_width="0dp"
+            android:layout_weight="1.3"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:textColor="#ffffff"
+            android:gravity="center"
+            android:textStyle="bold"
+
+            android:textSize="15sp"
+
+            android:text="MODEL" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

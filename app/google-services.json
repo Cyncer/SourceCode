@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "229571936145",
+    "firebase_url": "https://cync-1377.firebaseio.com",
+    "project_id": "cync-1377",
+    "storage_bucket": "cync-1377.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229571936145:android:2bb73e0a58e51163",
+        "android_client_info": {
+          "package_name": "com.app.android.cync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "229571936145-gfat5h7a1tev3ohjtakob3lq73s1ksq2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.android.cync",
+            "certificate_hash": "48c090e0fb03cf11ef4f212656e6efd0aabf7585"
+          }
+        },
+        {
+          "client_id": "229571936145-f5cjakjo71nkl0rc3st7eboc7pkjtn64.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1haZUrWT5J8xXq9j6WsZUSMNLofd3Pns"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "229571936145-f5cjakjo71nkl0rc3st7eboc7pkjtn64.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
