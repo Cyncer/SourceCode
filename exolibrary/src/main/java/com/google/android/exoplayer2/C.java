@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.media.AudioFormat;
