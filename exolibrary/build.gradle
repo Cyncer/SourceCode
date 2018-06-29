@@ -27,7 +27,7 @@ android {
         // functionality provided by the library requires API level 16 or
         // greater.
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 22
         consumerProguardFiles 'proguard-rules.txt'
     }
 
