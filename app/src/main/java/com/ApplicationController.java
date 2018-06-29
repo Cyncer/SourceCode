@@ -24,6 +24,7 @@ public class ApplicationController extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         MultiDex.install(this);
+        //test comment from Anand
     }
 
     public static final String TAG = ApplicationController.class
