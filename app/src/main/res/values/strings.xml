@@ -98,7 +98,7 @@
     <string name="try_at_mentions">Try @ mentions</string>
     <string name="no_matches_found">No matches found</string>
     <string name="no_mentions_added">Type some text with mentions below.</string>
-    <string name="google_app_id1">cync-1377</string>
+    <!--<string name="google_app_id">cync-1377</string>-->
     <string name="application_name">ExoPlayer</string>
     <string name="video">Video</string>
     <string name="audio">Audio</string>
