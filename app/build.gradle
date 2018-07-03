@@ -26,9 +26,9 @@ android {
         applicationId "com.app.android.cync"
         minSdkVersion 19
         multiDexEnabled true
-        targetSdkVersion 22
-        versionCode 39
-        versionName "3.2.4"
+        targetSdkVersion 26
+        versionCode 42
+        versionName "3.2.6"
         signingConfig signingConfigs.finalSign
     }
 
@@ -88,6 +88,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'org.apache.commons:commons-lang3:3.4'
     implementation 'com.percolate:caffeine:0.3.3'
+    implementation 'com.google.firebase:firebase-core:16.0.0'
 }
 
 //----------
@@ -95,3 +96,4 @@ dependencies {
 //    mavenCentral()
 //}
 apply plugin: 'maven'
+apply plugin: 'com.google.gms.google-services'
