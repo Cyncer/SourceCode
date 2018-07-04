@@ -1,27 +1,35 @@
 {
   "project_info": {
-    "project_number": "453559022794",
-    "firebase_url": "https://cync-fcm.firebaseio.com",
-    "project_id": "cync-fcm",
-    "storage_bucket": "cync-fcm.appspot.com"
+    "project_number": "631658478743",
+    "firebase_url": "https://mycync-e9ac6.firebaseio.com",
+    "project_id": "mycync-e9ac6",
+    "storage_bucket": "mycync-e9ac6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:453559022794:android:2bb73e0a58e51163",
+        "mobilesdk_app_id": "1:631658478743:android:2bb73e0a58e51163",
         "android_client_info": {
           "package_name": "com.app.android.cync"
         }
       },
       "oauth_client": [
         {
-          "client_id": "453559022794-re6l3oehiigfov7ielgq3qkmfj0o23qo.apps.googleusercontent.com",
+          "client_id": "631658478743-i099oa65qto0dri12k351t7nhvv574mi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.android.cync",
+            "certificate_hash": "8db8e061c0a47ef3889445362ae4fae7f66db42e"
+          }
+        },
+        {
+          "client_id": "631658478743-4ngk8f62vu0q53bdil4g1ltael7toahp.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBfyKji5XLQ1UmHknN3IUyC8gw0AP2cZgs"
+          "current_key": "AIzaSyDS8cF8dnx42R5lOi30u9HTTO1SJaszCbM"
         }
       ],
       "services": {
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "631658478743-4ngk8f62vu0q53bdil4g1ltael7toahp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

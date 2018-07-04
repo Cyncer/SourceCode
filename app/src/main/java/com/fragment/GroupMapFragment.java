@@ -30,6 +30,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -57,7 +58,7 @@ import java.util.Map;
 public class GroupMapFragment extends BaseContainerFragment implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
     LatLngBounds.Builder mybuilder = new LatLngBounds.Builder();
     //------- Google Map
     MapView mapView;
@@ -68,7 +69,7 @@ public class GroupMapFragment extends BaseContainerFragment implements
     double currentLat = 0.0, currentLng = 0.0;
     //-------
     private static final long INTERVAL = 1000 * 20;
-    private static final long FASTEST_INTERVAL = 1000 *20;
+    private static final long FASTEST_INTERVAL = 1000 * 20;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
@@ -77,6 +78,7 @@ public class GroupMapFragment extends BaseContainerFragment implements
     LocationManager mLocationManager;
     private RequestQueue mQueue;
     List<LatLng> latLngList = new ArrayList<LatLng>();
+
     public GroupMapFragment() {
         // Required empty public constructor
     }
@@ -127,15 +129,24 @@ public class GroupMapFragment extends BaseContainerFragment implements
         mQueue = VolleySetup.getRequestQueue();
         Init(rootView);
         mapView.onCreate(savedInstanceState);
-        googleMap = mapView.getMap();
+        mapView.getMapAsync(this);
+
+        // googleMap = mapView.getMap();
 //        googleMap.setMyLocationEnabled(true);
 //        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-        googleMap.getUiSettings().setAllGesturesEnabled(true);
+        //googleMap.getUiSettings().setAllGesturesEnabled(true);
         checkGPSon();
-        addMarker();
+        //addMarker();
         // Inflate the layout for this fragment
         return rootView;
+    }
+
+    @Override
+    public void onMapReady(GoogleMap gMap) {
+        googleMap = gMap;
+        googleMap.getUiSettings().setAllGesturesEnabled(true);
+        addMarker();
     }
 
     @Override
@@ -167,13 +178,10 @@ public class GroupMapFragment extends BaseContainerFragment implements
             public void onClick(View view) {
 
 
-
-
-
                 final LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                if(googleMap!=null  ) {
+                if (googleMap != null) {
 
-                    builder.include(new LatLng(currentLat,currentLng));
+                    builder.include(new LatLng(currentLat, currentLng));
 //                    CameraPosition cameraPosition = new CameraPosition.Builder()
 //                            .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng)).build();
 //
@@ -187,10 +195,6 @@ public class GroupMapFragment extends BaseContainerFragment implements
 //                    googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 35));
 
 
-
-
-
-
                     WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
                     Display display = wm.getDefaultDisplay();
                     DisplayMetrics metrics = new DisplayMetrics();
@@ -200,15 +204,15 @@ public class GroupMapFragment extends BaseContainerFragment implements
 
 
                     LatLngBounds bounds;
-                    if(mybuilder!=null)
-                        bounds= mybuilder.build();
+                    if (mybuilder != null)
+                        bounds = mybuilder.build();
                     else
-                        bounds= builder.build();
+                        bounds = builder.build();
                     CameraUpdate yourLocation = CameraUpdateFactory.newLatLngBounds(bounds, width / 3, height / 3, 35);
 
 
                     CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
-                            .target(new LatLng(currentLat,currentLng));
+                            .target(new LatLng(currentLat, currentLng));
 
 
                     cameraBuilder.zoom(googleMap.getCameraPosition().zoom);
@@ -224,7 +228,7 @@ public class GroupMapFragment extends BaseContainerFragment implements
 
 
                             CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
-                                    .target(new LatLng(currentLat,currentLng));
+                                    .target(new LatLng(currentLat, currentLng));
 
 
                             cameraBuilder.zoom(googleMap.getCameraPosition().zoom);
@@ -235,13 +239,6 @@ public class GroupMapFragment extends BaseContainerFragment implements
 
                         }
                     });
-
-
-
-
-
-
-
 
 
                 }
@@ -311,7 +308,7 @@ public class GroupMapFragment extends BaseContainerFragment implements
 
         LatLngBounds bounds = builder.build();
 
-        mybuilder=builder;
+        mybuilder = builder;
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
@@ -407,8 +404,8 @@ public class GroupMapFragment extends BaseContainerFragment implements
 //        Log.d(TAG, "Firing onLocationChanged..............................................");
         mCurrentLocation = location;
 
-        currentLat=mCurrentLocation.getLatitude();
-        currentLng=mCurrentLocation.getLongitude();
+        currentLat = mCurrentLocation.getLatitude();
+        currentLng = mCurrentLocation.getLongitude();
 
 //        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateMarker(new LatLng(location.getLatitude(), location.getLongitude()));
@@ -480,4 +477,6 @@ public class GroupMapFragment extends BaseContainerFragment implements
             }
         };
     }
+
+
 }

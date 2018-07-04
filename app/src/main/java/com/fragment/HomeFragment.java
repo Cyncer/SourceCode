@@ -64,6 +64,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -108,12 +109,12 @@ import static android.view.View.VISIBLE;
 public class HomeFragment extends BaseContainerFragment implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, OnMapReadyCallback {
 
     private static final int SHARE_CODE = 104;
     boolean onlyOnce = true;
     ArrayList<Ride> mRideList = new ArrayList<>();
-    ArrayList<String > mRideIdList = new ArrayList<>();
+    ArrayList<String> mRideIdList = new ArrayList<>();
 
     int colorList[] = {
 
@@ -295,11 +296,13 @@ public class HomeFragment extends BaseContainerFragment implements
         Init(rootView);
         try {
             mapView.onCreate(savedInstanceState);
-            googleMap = mapView.getMap();
+            mapView.getMapAsync(this);
+
+            //googleMap = mapView.getMap();
 //            googleMap.setMyLocationEnabled(true);
 //            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-            googleMap.getUiSettings().setAllGesturesEnabled(true);
+//            googleMap.getUiSettings().setAllGesturesEnabled(true);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -328,8 +331,17 @@ public class HomeFragment extends BaseContainerFragment implements
             }
         };
         getActivity().registerReceiver(updateUIReciver, filter);
+        return rootView;
+    }
 
+    @Override
+    public void onMapReady(GoogleMap gMap) {
+        googleMap = gMap;
+        googleMap.getUiSettings().setAllGesturesEnabled(true);
+        getDataFromWeb();
+    }
 
+    private void getDataFromWeb() {
         if (CommonClass.getTrackingInterval(getActivity()) == 5000) {
             selectedinterval = 0;
         } else if (CommonClass.getTrackingInterval(getActivity()) == 15000) {
@@ -361,10 +373,10 @@ public class HomeFragment extends BaseContainerFragment implements
             Log.i(TAG, "onCreateView: Total Rides   = " + ex_ridesm);
 
 
-            if ( CommonClass.getRideIds(getActivity()).trim().length() > 0 || ride_id.trim().length()>0 ) {
+            if (CommonClass.getRideIds(getActivity()).trim().length() > 0 || ride_id.trim().length() > 0) {
 
 
-                if(ride_id.trim().length()>0) {
+                if (ride_id.trim().length() > 0) {
                     String ex_rides = CommonClass.getRideIds(getActivity());
 
                     Log.i(TAG, "onCreateView: Total Rides 1  = " + ex_rides);
@@ -396,8 +408,8 @@ public class HomeFragment extends BaseContainerFragment implements
         } else {
             updateMarker(new LatLng(currentLat, currentLng));
         }
-        return rootView;
     }
+
 
     @Override
     public void onAttach(Activity activity) {
@@ -1471,9 +1483,7 @@ public class HomeFragment extends BaseContainerFragment implements
                 //CommonClass.clearPauseInterval(getActivity());
 
 
-
-            }
-            else if (imgPlayPause.getDrawable().getConstantState().equals
+            } else if (imgPlayPause.getDrawable().getConstantState().equals
                     (getResources().getDrawable(R.drawable.btn_resume).getConstantState())) {
                 long timestop = SystemClock.elapsedRealtime();
                 CommonClass.setStopPauseInterval(getActivity(), timestop);
@@ -1520,7 +1530,6 @@ public class HomeFragment extends BaseContainerFragment implements
                 CommonClass.setStopPauseDistance(getActivity(), dis);
 
                 double disPause = CommonClass.getStopPauseDistance(getActivity()) - CommonClass.getStartPauseDistance(getActivity());
-
 
 
                 CommonClass.setPauseDistance(getActivity(), (float) disPause);
@@ -1588,7 +1597,6 @@ public class HomeFragment extends BaseContainerFragment implements
             float average = (float) ((fDistance * 1000 / (time / 1000)) * 3.6);
 
 
-
             fDistance = fDistance - CommonClass.getPauseDistance(getActivity());
 
             fDistance = fDistance + CommonClass.getPastDistance(getActivity());
@@ -1602,8 +1610,6 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
             distance = String.format("%.2f", fDistance);
-
-
 
 
             CommonClass.clearPauseInterval(getActivity());
@@ -2293,7 +2299,6 @@ public class HomeFragment extends BaseContainerFragment implements
                             share_ride_url = CommonClass.getDataFromJson(jData, "share_ride");
 
 
-
                             if (isShareClick) {
 
                                 Intent share = new Intent(android.content.Intent.ACTION_SEND);
@@ -2371,7 +2376,6 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         if (dialogShare != null)
                             dialogShare.dismiss();
-
 
 
                         String ex_rides = CommonClass.getRideIds(getActivity());
@@ -2828,7 +2832,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     } else {
 
 
-                       // CommonClass.ShowToast(mActivity, message);
+                        // CommonClass.ShowToast(mActivity, message);
 
 
                     }
@@ -2843,7 +2847,6 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
                 }
-
 
 
                 if (CommonClass.getUserpreference(getActivity()).view_my_rides)
@@ -2864,7 +2867,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
     public void getMyRide() {
 
-        if(mActivity!=null) {
+        if (mActivity != null) {
             CommonClass.closeKeyboard(mActivity);
             ConnectionDetector cd = new ConnectionDetector(mActivity);
             boolean isConnected = cd.isConnectingToInternet();
@@ -2879,7 +2882,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
                         requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
-                       // requestparam.put("user_id", "960");
+                        // requestparam.put("user_id", "960");
 
                         // requestparam.put("ride_id", "" + ride_id);
 

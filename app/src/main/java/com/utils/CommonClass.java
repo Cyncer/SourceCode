@@ -47,12 +47,11 @@ import com.customwidget.TouchImageView;
 import com.cync.model.FriendDetail;
 import com.cync.model.GroupListItem;
 import com.cync.model.UserDetail;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -78,7 +77,7 @@ import java.util.TimeZone;
 
 
 public class CommonClass {
-    private static final String TAG ="CommonClass" ;
+    private static final String TAG = "CommonClass";
     public static boolean isForground = false;
     public static String KEY_USER_DATA = "User_data";
     public static String OTHER_USER_DATA = "other_User_data";
@@ -288,10 +287,7 @@ public class CommonClass {
                 @Override
                 public void run() {
                     try {
-                        InstanceID instanceID = InstanceID.getInstance(ApplicationController.getContext());
-                        String token = instanceID.getToken(Config.SENDER_ID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-                        Log.e("Update GCM------", "Token---------- "+token);
-                        CommonClass.setDeviceToken(token);
+                        CommonClass.setDeviceToken(FirebaseInstanceId.getInstance().getToken());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -367,7 +363,6 @@ public class CommonClass {
     }
 
 
-
     public static double getDataFromJsonDouble2(JSONObject jobj, String key) {
         try {
             if (jobj.has(key)) {
@@ -434,7 +429,7 @@ public class CommonClass {
 
         UserDetail mUserDetail = null;
         if (tmp.equalsIgnoreCase("null")) {
-            mUserDetail = new UserDetail("null", "null", "null", "null", "null", "null", true,true,false);
+            mUserDetail = new UserDetail("null", "null", "null", "null", "null", "null", true, true, false);
 
         } else {
             mUserDetail = getObjectDateUserFRomStringUserDetail(ApplicationController.getContext(), sp.getString(KEY_USER_DATA, "null"));
@@ -482,13 +477,12 @@ public class CommonClass {
 
 
     public static void setDeviceToken(String dt) {
-        // TODO Auto-generated method stub
+        if (dt == null || dt.isEmpty()) return;
 
-        @SuppressWarnings({"static-access", "deprecation"})
-        SharedPreferences sp = ApplicationController.getContext().getSharedPreferences("device_token", ApplicationController.getContext().MODE_PRIVATE);
+        SharedPreferences sp = ApplicationController.getContext()
+                .getSharedPreferences("device_token", Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
         peditor.putString(DEVICE_TOKEN, dt);
-
         peditor.commit();
 
     }
@@ -658,14 +652,14 @@ public class CommonClass {
 
     public static TextView txtLoadingText;
 
-    public static void setTextLoading(String text)
-    {
-        if(txtLoadingText!=null)
-        txtLoadingText.setText(text);
+    public static void setTextLoading(String text) {
+        if (txtLoadingText != null)
+            txtLoadingText.setText(text);
     }
+
     public static CircularProgressBar showLoadingPercentage(Context ct) {
 
-        CircularProgressBar loadingIndicator=null;
+        CircularProgressBar loadingIndicator = null;
 
         try {
 
@@ -691,7 +685,7 @@ public class CommonClass {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return  loadingIndicator;
+        return loadingIndicator;
     }
 
 
@@ -748,20 +742,11 @@ public class CommonClass {
 //            gear3.startAnimation(rotate3);
 
 
-
-
-
             dialog.show();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
-
-
-
-
 
 
     public static void showLoadingCompress(Context ct) {
@@ -855,10 +840,6 @@ public class CommonClass {
     }
 
 
-
-
-
-
     @TargetApi(Build.VERSION_CODES.M)
     public static boolean doWeHavePermisiionFor(Activity activity, String Permision) {
         int hasWriteContactsPermission = activity.checkSelfPermission(Permision);
@@ -932,7 +913,7 @@ public class CommonClass {
 
     public static ArrayList<FriendDetail> sortFriends(ArrayList<FriendDetail> friends) {
 
-        if(friends!=null && friends.size()>0) {
+        if (friends != null && friends.size() > 0) {
             Collections.sort(friends, new CustomComparatorFriend());
         }
         return friends;
@@ -1035,17 +1016,10 @@ public class CommonClass {
 //    }
 
 
+    public static ArrayList<String> getMentionListFromString(Context ct, String json1) {
 
-
-
-
-
-
-
-    public static ArrayList<String> getMentionListFromString(Context ct, String json1)
-    {
-
-        Type type = new TypeToken<List<String>>() {}.getType();
+        Type type = new TypeToken<List<String>>() {
+        }.getType();
         ArrayList<String> inpList = new Gson().fromJson(json1, type);
         return inpList;
     }
@@ -1059,8 +1033,6 @@ public class CommonClass {
     }
 
 
-
-
     public static String getFriendStringFromObject(Context ct, ArrayList<FriendDetail> object) {
 
         SharedPreferences mPrefs = ct.getSharedPreferences("friendpref", ct.MODE_PRIVATE);
@@ -1070,23 +1042,18 @@ public class CommonClass {
     }
 
 
+    public static ArrayList<FriendDetail> getFriendObjectListFromString(Context ct, String json1) {
 
-
-
-    public static ArrayList<FriendDetail> getFriendObjectListFromString(Context ct, String json1)
-    {
-
-        Type type = new TypeToken<List<FriendDetail>>() {}.getType();
+        Type type = new TypeToken<List<FriendDetail>>() {
+        }.getType();
         ArrayList<FriendDetail> inpList = new Gson().fromJson(json1, type);
         return inpList;
     }
 
 
+    public static void setFriendDetail(Context ct, String dt) {
 
-    public static void setFriendDetail(Context ct, String dt)
-    {
-
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("friendpref", ct.MODE_PRIVATE);
 
         SharedPreferences.Editor peditor = sp.edit();
@@ -1096,15 +1063,13 @@ public class CommonClass {
 
     }
 
-    public static String getFriendDetail(Context ct)
-    {
-        @SuppressWarnings({ "static-access", "deprecation" })
+    public static String getFriendDetail(Context ct) {
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("friendpref", ct.MODE_PRIVATE);
 
         return sp.getString("KEY_FRIEND_LIST", "");
 
     }
-
 
 
     public static String isFirstTime = "true";
@@ -1122,8 +1087,8 @@ public class CommonClass {
 
     public static String KEY_START_PAUSE_DISTANCE = "start_pause_distance";
     public static String KEY_STOP_PAUSE_DISTANCE = "stop_pause_distance";
-    public static String KEY_PAUSE_DISTANCE= "pause_distance";
-    public static String KEY_PASTE_DISTANCE= "past_distance";
+    public static String KEY_PAUSE_DISTANCE = "pause_distance";
+    public static String KEY_PASTE_DISTANCE = "past_distance";
 
     static final String DATEFORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -1154,12 +1119,11 @@ public class CommonClass {
     }
 
 
-
     public static void setlocationServiceCurrentState(Context ct,
-                                                    int state) {
+                                                      int state) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("state",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1172,7 +1136,7 @@ public class CommonClass {
 
     public static int getlocationServiceCurrentState(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("state",
                 ct.MODE_PRIVATE);
 
@@ -1183,13 +1147,11 @@ public class CommonClass {
     }
 
 
-
-
     public static void setlocationServicepreference(Context ct,
                                                     String isServiceStart) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("isServiceStart",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1202,7 +1164,7 @@ public class CommonClass {
 
     public static String getlocationServicepreference(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("isServiceStart",
                 ct.MODE_PRIVATE);
 
@@ -1226,7 +1188,7 @@ public class CommonClass {
     public static void setTrackingInterval(Context ct, int times) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("tracking_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1239,7 +1201,7 @@ public class CommonClass {
 
     public static int getTrackingInterval(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("tracking_time",
                 ct.MODE_PRIVATE);
 
@@ -1250,12 +1212,10 @@ public class CommonClass {
     }
 
 
-
-
     public static void setStartPauseInterval(Context ct, long times) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1269,7 +1229,7 @@ public class CommonClass {
     public static void setStopPauseInterval(Context ct, long times) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1283,7 +1243,7 @@ public class CommonClass {
 
     public static long getStartPauseInterval(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
                 ct.MODE_PRIVATE);
 
@@ -1295,7 +1255,7 @@ public class CommonClass {
 
     public static long getStopPauseInterval(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
                 ct.MODE_PRIVATE);
 
@@ -1308,7 +1268,7 @@ public class CommonClass {
     public static void clearPauseInterval(Context ct) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1321,16 +1281,14 @@ public class CommonClass {
     }
 
 
-
-
     public static void setPauseTime(Context ct, long times) {
         // TODO Auto-generated method stub
 
 
-        Log.i(TAG, "kkkkk setPauseTime: "+getPauseTime(ct));
-        Log.i(TAG, "kkkkk setPauseTime: "+times);
-       long finalTime= getPauseTime(ct)+times;
-        @SuppressWarnings({ "static-access", "deprecation" })
+        Log.i(TAG, "kkkkk setPauseTime: " + getPauseTime(ct));
+        Log.i(TAG, "kkkkk setPauseTime: " + times);
+        long finalTime = getPauseTime(ct) + times;
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1343,7 +1301,7 @@ public class CommonClass {
 
     public static long getPauseTime(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_time",
                 ct.MODE_PRIVATE);
 
@@ -1360,7 +1318,7 @@ public class CommonClass {
         Log.i(TAG, "kkkkk clearPauseTime: ");
 
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1372,19 +1330,11 @@ public class CommonClass {
     }
 
 
-
-
-
-
-
-
     public static void setDuration(Context ct, long times) {
         // TODO Auto-generated method stub
 
 
-
-
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("duration",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1397,7 +1347,7 @@ public class CommonClass {
 
     public static long getDuration(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("duration",
                 ct.MODE_PRIVATE);
 
@@ -1414,7 +1364,7 @@ public class CommonClass {
         Log.i(TAG, "kkkkk clearPauseTime: ");
 
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("duration",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1426,38 +1376,10 @@ public class CommonClass {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public static void clearTrackingInterval(Context ct) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("tracking_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1469,12 +1391,9 @@ public class CommonClass {
     }
 
 
-
-
-
     public static double getStartPauseDistance(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_distance",
                 ct.MODE_PRIVATE);
 
@@ -1486,7 +1405,7 @@ public class CommonClass {
 
     public static double getStopPauseDistance(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_distance",
                 ct.MODE_PRIVATE);
 
@@ -1499,7 +1418,7 @@ public class CommonClass {
     public static void clearPauseDistanceInterval(Context ct) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1512,16 +1431,11 @@ public class CommonClass {
     }
 
 
-
-
-
-
-
     public static void setStartPauseDistance(Context ct, double dis) {
         // TODO Auto-generated method stub
 
-        Log.i(TAG, ">>> Distance: setStartPauseDistance = "+ dis);
-        @SuppressWarnings({ "static-access", "deprecation" })
+        Log.i(TAG, ">>> Distance: setStartPauseDistance = " + dis);
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1531,16 +1445,14 @@ public class CommonClass {
         peditor.commit();
 
 
-
-
     }
 
     public static void setStopPauseDistance(Context ct, double dis) {
         // TODO Auto-generated method stub
 
-        Log.i(TAG, ">>> Distance: setStopPauseDistance = "+ dis);
+        Log.i(TAG, ">>> Distance: setStopPauseDistance = " + dis);
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1550,27 +1462,22 @@ public class CommonClass {
         peditor.commit();
 
 
-
-
     }
-
-
 
 
     public static void setPauseDistance(Context ct, float dis) {
         // TODO Auto-generated method stub
 
 
-        double finalDis= getPauseDistance(ct)+dis;
-        Log.i(TAG, ">>> Distance: setPauseDistance = "+ finalDis);
+        double finalDis = getPauseDistance(ct) + dis;
+        Log.i(TAG, ">>> Distance: setPauseDistance = " + finalDis);
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
 
         peditor.putFloat(KEY_PAUSE_DISTANCE, (float) finalDis);
-
 
 
         peditor.commit();
@@ -1579,14 +1486,14 @@ public class CommonClass {
 
     public static double getPauseDistance(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_distance",
                 ct.MODE_PRIVATE);
 
         double tmp = sp.getFloat(KEY_PAUSE_DISTANCE, 0.0f);
 
 
-        Log.i(TAG, ">>> Distance: getPauseDistance = "+ tmp);
+        Log.i(TAG, ">>> Distance: getPauseDistance = " + tmp);
 
         return tmp;
 
@@ -1599,7 +1506,7 @@ public class CommonClass {
 
         Log.i(TAG, ">>> Distance: clearPauseDistance = ");
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_pause_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1611,20 +1518,13 @@ public class CommonClass {
     }
 
 
-
-
-
-
-
-
-
     public static String KEY_START_TIME = "start_time";
     public static String KEY_STOP_TIME = "stop_time";
 
     public static void setStartTime(Context ct, long times) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("start_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1637,7 +1537,7 @@ public class CommonClass {
 
     public static long getStartTime(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("start_time",
                 ct.MODE_PRIVATE);
         long tmp = sp.getLong(KEY_START_TIME, 0);
@@ -1646,11 +1546,10 @@ public class CommonClass {
     }
 
 
-
     public static void setStopTime(Context ct, long times) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("stop_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1663,7 +1562,7 @@ public class CommonClass {
 
     public static long getStopTime(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("stop_time",
                 ct.MODE_PRIVATE);
 
@@ -1674,11 +1573,10 @@ public class CommonClass {
     }
 
 
-
     public static void clearStartTime(Context ct) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("start_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1693,7 +1591,7 @@ public class CommonClass {
     public static void clearStopTime(Context ct) {
         // TODO Auto-generated method stub
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("start_time",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1706,32 +1604,19 @@ public class CommonClass {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     public static void setPastDistance(Context ct, float dis) {
         // TODO Auto-generated method stub
 
 
-        double finalDis= getPastDistance(ct)+dis;
-        Log.i(TAG, ">>> Distance: setPauseDistance = "+ finalDis);
+        double finalDis = getPastDistance(ct) + dis;
+        Log.i(TAG, ">>> Distance: setPauseDistance = " + finalDis);
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_past_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
 
         peditor.putFloat(KEY_PASTE_DISTANCE, (float) finalDis);
-
 
 
         peditor.commit();
@@ -1740,14 +1625,14 @@ public class CommonClass {
 
     public static double getPastDistance(Context ct) {
         // TODO Auto-generated method stub
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_past_distance",
                 ct.MODE_PRIVATE);
 
         double tmp = sp.getFloat(KEY_PASTE_DISTANCE, 0.0f);
 
 
-        Log.i(TAG, ">>> Distance: getPauseDistance = "+ tmp);
+        Log.i(TAG, ">>> Distance: getPauseDistance = " + tmp);
 
         return tmp;
 
@@ -1760,7 +1645,7 @@ public class CommonClass {
 
         Log.i(TAG, ">>> Distance: clearPauseDistance = ");
 
-        @SuppressWarnings({ "static-access", "deprecation" })
+        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("r_past_distance",
                 ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
@@ -1770,13 +1655,6 @@ public class CommonClass {
         peditor.commit();
 
     }
-
-
-
-
-
-
-
 
 
     public static String getPath(final Context context, final Uri uri) {
@@ -1822,7 +1700,7 @@ public class CommonClass {
                 }
 
                 final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {
+                final String[] selectionArgs = new String[]{
                         split[1]
                 };
 
@@ -1850,9 +1728,9 @@ public class CommonClass {
      * Get the value of the data column for this Uri. This is useful for
      * MediaStore Uris, and other file-based ContentProviders.
      *
-     * @param context The context.
-     * @param uri The Uri to query.
-     * @param selection (Optional) Filter used in the query.
+     * @param context       The context.
+     * @param uri           The Uri to query.
+     * @param selection     (Optional) Filter used in the query.
      * @param selectionArgs (Optional) Selection arguments used in the query.
      * @return The value of the _data column, which is typically a file path.
      */
@@ -1913,10 +1791,7 @@ public class CommonClass {
     }
 
 
-
-
     public static void setRideIds(Context ct, String ride_ids) {
-
 
 
         SharedPreferences sp = ct.getSharedPreferences("ridepref",
@@ -1935,8 +1810,6 @@ public class CommonClass {
     public static String getRideIds(Context ct) {
 
 
-
-
         SharedPreferences sp = ct.getSharedPreferences("ridepref",
                 ct.MODE_PRIVATE);
         String name = sp.getString(KEY_RIDE_ID, "");
@@ -1945,9 +1818,6 @@ public class CommonClass {
 
 
     }
-
-
-
 
 
 }

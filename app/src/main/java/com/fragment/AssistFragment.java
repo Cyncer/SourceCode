@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -44,6 +45,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -77,15 +79,15 @@ import java.util.Map;
 public class AssistFragment extends BaseContainerFragment implements
         LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
 
     //-------
     private static final long INTERVAL = 1000 * 20;
     private static final long FASTEST_INTERVAL = 1000 * 20;
     private static final String TAG = "LocationActivity";
-    String  tmpCategory = "",tmpMake = "", tmpYear = "", tmpModel = "";
+    String tmpCategory = "", tmpMake = "", tmpYear = "", tmpModel = "";
     boolean isFirstCategory = true, isFirstMake = true, isFirstYear = true, isFirstModel = true;
-    ArrayAdapter mAdapterCategory,mAdapterMake, mAdapterModel, mAdapterYear;
+    ArrayAdapter mAdapterCategory, mAdapterMake, mAdapterModel, mAdapterYear;
 
     boolean mySettings = false;
     Spinner spinnerCategory, spinnerMake, spinnerYear, spinnerModel;
@@ -129,7 +131,7 @@ public class AssistFragment extends BaseContainerFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLocationManager = (LocationManager) getActivity().getSystemService(getActivity().LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (!isGooglePlayServicesAvailable()) {
             mActivity.finish();
         }
@@ -159,7 +161,7 @@ public class AssistFragment extends BaseContainerFragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_assist, container, false);
@@ -170,34 +172,38 @@ public class AssistFragment extends BaseContainerFragment implements
         Init(rootView);
         try {
             mapView.onCreate(savedInstanceState);
-            googleMap = mapView.getMap();
+            mapView.getMapAsync(this);
+            // googleMap = mapView.getMap();
 //            googleMap.setMyLocationEnabled(true);
 //            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-            googleMap.getUiSettings().setAllGesturesEnabled(true);
+            //googleMap.getUiSettings().setAllGesturesEnabled(true);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         checkGPSon();
 
-        updateMarker(new LatLng(currentLat, currentLng));
+        // updateMarker(new LatLng(currentLat, currentLng));
         // Inflate the layout for this fragment
 
-
         UserDetail udm = CommonClass.getUserpreference(getActivity());
-
         if (udm.make.trim().length() != 0) {
-
-            tmpMake=udm.make;
-            tmpYear=udm.year;
-            tmpModel=udm.model;
-
+            tmpMake = udm.make;
+            tmpYear = udm.year;
+            tmpModel = udm.model;
         }
 
-
-
-        getData();
         return rootView;
+    }
+
+    @Override
+    public void onMapReady(GoogleMap gMap) {
+        this.googleMap = gMap;
+        googleMap.getUiSettings().setAllGesturesEnabled(true);
+        updateMarker(new LatLng(currentLat, currentLng));
+
+        //time to call webservice to get data
+        getData();
     }
 
     private void getData() {
@@ -208,11 +214,11 @@ public class AssistFragment extends BaseContainerFragment implements
 
 
                 String url = Constants.assistUrl;
-                url = url + "?mechanics_category="+tmpCategory;
+                url = url + "?mechanics_category=" + tmpCategory;
 
                 // "make_name="+tmpMake+"&make_year="+tmpYear+"&make_model="+tmpModel
                 if (tmpMake.trim().length() > 0) {
-                    url = url +"&make_name=" + tmpMake;
+                    url = url + "&make_name=" + tmpMake;
                     if (tmpYear.trim().length() > 0) {
                         url = url + "&make_year=" + tmpYear;
 
@@ -222,7 +228,7 @@ public class AssistFragment extends BaseContainerFragment implements
                     }
                 }
 
-                 Log.i("AssistFragment","URL===>"+url);
+                Log.i("AssistFragment", "URL===>" + url);
 
                 VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.GET, url, mSuccessLisner(),
                         mErrorLisner()) {
@@ -650,11 +656,8 @@ public class AssistFragment extends BaseContainerFragment implements
             public void onItemSelected(Spinner parent, View view, int position, long id) {
 
 
-
-
             }
         });
-
 
 
         spinnerYear.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
@@ -714,11 +717,7 @@ public class AssistFragment extends BaseContainerFragment implements
                 // TODO Auto-generated method stub
 
 
-
-                    tmpCategory = spinnerCategory.getSelectedItem().toString();
-
-
-
+                tmpCategory = spinnerCategory.getSelectedItem().toString();
 
 
                 if (spinnerMake.getSelectedItemPosition() == 0) {
@@ -836,18 +835,16 @@ public class AssistFragment extends BaseContainerFragment implements
 
                             for (int i = 0; i < catArray.length(); i++) {
 
-                                if(i==0 && tmpCategory.trim().length()==0)
-                                {
-                                    tmpCategory=""+catArray.getString(i);
+                                if (i == 0 && tmpCategory.trim().length() == 0) {
+                                    tmpCategory = "" + catArray.getString(i);
                                 }
-                                listCategory.add(""+catArray.getString(i));
+                                listCategory.add("" + catArray.getString(i));
 
 
                             }
 
 
                         }
-
 
 
                         if (jresObjectMain.has("result")) {
@@ -878,7 +875,6 @@ public class AssistFragment extends BaseContainerFragment implements
                             }
 
 
-
                             if (mAdapterMake == null) {
                                 mAdapterMake = new ArrayAdapter<String>(getActivity(), R.layout.spiner_item_layout, listMake);
                                 spinnerMake.setAdapter(mAdapterMake);
@@ -896,7 +892,7 @@ public class AssistFragment extends BaseContainerFragment implements
                                     spinnerMake.setSelection(index);
                             }
 
-                            Log.i("AssistFragment","tmpCategory=="+tmpCategory);
+                            Log.i("AssistFragment", "tmpCategory==" + tmpCategory);
 
                             if (tmpCategory.trim().length() != 0) {
 
@@ -1144,7 +1140,7 @@ public class AssistFragment extends BaseContainerFragment implements
                     try {
                         LatLng tempLatLng = new LatLng(Double.parseDouble(list.get(i).lat), Double.parseDouble(list.get(i).lng));
                         final MarkerOptions options = new MarkerOptions().position(tempLatLng);
-                        Bitmap smallMarker=null;
+                        Bitmap smallMarker = null;
                         if (list.get(i).id.equalsIgnoreCase("-1")) {
 
                             options.icon(BitmapDescriptorFactory
@@ -1166,10 +1162,10 @@ public class AssistFragment extends BaseContainerFragment implements
                                 if (imagePath.trim().length() > 0) {
 
                                     try {
-                                    URL url = new URL(imagePath);
-                                    Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                                    smallMarker = Bitmap.createScaledBitmap(bmp, 100, 100, false);
-                                   // options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+                                        URL url = new URL(imagePath);
+                                        Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                                        smallMarker = Bitmap.createScaledBitmap(bmp, 100, 100, false);
+                                        // options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                     } catch (FileNotFoundException e) {
                                         Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
                                                 R.drawable.no_image);
@@ -1177,25 +1173,19 @@ public class AssistFragment extends BaseContainerFragment implements
                                         options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                     }
 
-                                } else{
+                                } else {
                                     Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
                                             R.drawable.no_image);
                                     smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                     //options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 }
 
-                            } else
-                            {
+                            } else {
                                 Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
                                         R.drawable.no_image);
                                 smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
-                               // options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+                                // options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                             }
-
-
-
-
-
 
 
                         } else {
@@ -1203,7 +1193,6 @@ public class AssistFragment extends BaseContainerFragment implements
                             options.icon(BitmapDescriptorFactory
                                     .fromResource(R.drawable.map_pin));
                         }
-
 
 
                         View markerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
@@ -1227,8 +1216,6 @@ public class AssistFragment extends BaseContainerFragment implements
                             drawable.draw(canvas);
                         markerView.draw(canvas);
                         options.icon(BitmapDescriptorFactory.fromBitmap(returnedBitmap));
-
-
 
 
                         options.title(list.get(i).name);

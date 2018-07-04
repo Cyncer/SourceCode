@@ -220,7 +220,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <!-- GCM code -->
-        <receiver
+        <!--<receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
@@ -231,7 +231,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".GCMIntentService" />
+        <service android:name=".GCMIntentService" />-->
         <!-- XMPP -->
         <activity
             android:name=".ChatActivity"
