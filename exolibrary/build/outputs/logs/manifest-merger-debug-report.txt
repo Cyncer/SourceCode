@@ -1,25 +1,25 @@
 -- Merging decision tree log ---
 manifest
-ADDED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml:17:1-52
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml:17:1-52
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml:17:1-52
+ADDED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml:17:1-52
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml:17:1-52
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml:17:1-52
 	package
-		ADDED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml:17:11-50
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml:17:11-50
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml:17:1-52
+		ADDED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml:17:1-52
 uses-sdk
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-		ADDED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-		ADDED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
-		INJECTED from E:\Projects\CyncApp\exolibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+		ADDED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
+		INJECTED from D:\Projects\CyncApp_Android_Resolved\SourceCode\exolibrary\src\main\AndroidManifest.xml
