@@ -7,9 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Bundle;
 import android.util.Log;
 
+import com.ApplicationController;
 import com.app.android.cync.CyncTankDetailsActiivty;
 import com.app.android.cync.LoginActivity;
 import com.app.android.cync.NavigationDrawerActivity;
@@ -21,6 +21,8 @@ import com.utils.CommonClass;
 
 import java.util.Calendar;
 import java.util.Map;
+
+import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class MyFirebaseMessengingService extends FirebaseMessagingService {
     private static final String TAG = MyFirebaseMessengingService.class.getSimpleName();
@@ -57,67 +59,72 @@ public class MyFirebaseMessengingService extends FirebaseMessagingService {
     }*/
 
     private void setupNotification(Map<String, String> data) {
+
         if (!CommonClass.getUserpreference(this).user_id.equalsIgnoreCase("")) {
             is_groupInfo = false;
-//            try {
-//                String msg = intent.getString("message");
-//                senderId = intent.getString("sender_id", "");
-//
-//                if (intent.containsKey("ty+pe")) {
-//                    type = intent.getString("ty+pe");
-//                    Log.e("push recived Type==", "push recived Type==" + type);
-//                    Log.e("push recived Type==", "push recived Type==" + senderId);
-//                }
-//
-//                if (intent.containsKey("notification_id")) {
-//                    notification_id = intent.getString("notification_id");
-//                }
-//
-//                int index = 0;
-//
-//                if (type.equalsIgnoreCase("silent_push")) {
-//                    String countstr = intent.getString("message");
-//                    try {
-//                        int count = Integer.parseInt(countstr);
-//                        ShortcutBadger.applyCount(ApplicationController.getContext(), count);
-//                    } catch (NumberFormatException e) {
-//                        e.printStackTrace();
-//                    }
-//                } else if (type.equalsIgnoreCase("new_post")) {
-//                    prepareNotificationLikeComment(getApplicationContext(), "Cync", intent.getString("message"), senderId, type, notification_id);
-//                } else if (type.equalsIgnoreCase("like") || type.equalsIgnoreCase("unlike") || type.equalsIgnoreCase("comment")) {
-//                    prepareNotificationLikeComment(getApplicationContext(), "Cync", intent.getString("message"), senderId, type, notification_id);
-//                } else if (msg.contains("accepted")) {
-//                    if (msg.contains("friend")) {
-//                        index = 2;
-//                    } else if (msg.contains("group")) {
-//                        index = 3;
-//
-//                    }
-//                    prepareNotification(getApplicationContext(), "Cync", intent.getString("message"), index, intent);
-//
-//                } else if (msg.contains("location")) {
-//                    index = 3;
-//
-//                    is_groupInfo = true;
-//                    prepareNotification(getApplicationContext(), "Cync", intent.getString("message"), index, intent);
-//
-//                } else {
-//                    index = 4;
-//                    prepareNotification(getApplicationContext(), "Cync", intent.getString("message"), index, intent);
-//
-//                }
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            try {
+                String msg = data.get("message");
+                senderId = data.get("sender_id");
+
+                if (senderId == null)
+                    senderId = "";
+
+                if (data.containsKey("ty+pe")) {
+                    type = data.get("ty+pe");
+                    Log.e("push recived Type==", "push recived Type==" + type);
+                    Log.e("push recived Type==", "push recived Type==" + senderId);
+                }
+
+                if (data.containsKey("notification_id")) {
+                    notification_id = data.get("notification_id");
+                }
+
+                int index = 0;
+
+                if (type.equalsIgnoreCase("silent_push")) {
+                    String countstr = data.get("message");
+                    try {
+                        int count = Integer.parseInt(countstr);
+                        ShortcutBadger.applyCount(ApplicationController.getContext(), count);
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                } else if (type.equalsIgnoreCase("new_post")) {
+                    prepareNotificationLikeComment(getApplicationContext(), "Cync", data.get("message"), senderId, type, notification_id);
+                } else if (type.equalsIgnoreCase("like") || type.equalsIgnoreCase("unlike") || type.equalsIgnoreCase("comment")) {
+                    prepareNotificationLikeComment(getApplicationContext(), "Cync", data.get("message"), senderId, type, notification_id);
+                } else if (msg.contains("accepted")) {
+                    if (msg.contains("friend")) {
+                        index = 2;
+                    } else if (msg.contains("group")) {
+                        index = 3;
+
+                    }
+                    prepareNotification(getApplicationContext(), "Cync", data.get("message"), index);
+
+                } else if (msg.contains("location")) {
+                    index = 3;
+
+                    is_groupInfo = true;
+                    prepareNotification(getApplicationContext(), "Cync", data.get("message"), index);
+
+                } else {
+                    index = 4;
+                    prepareNotification(getApplicationContext(), "Cync", data.get("message"), index);
+
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
 
     //Push notification methods (copied from previous one)
 
-    private void prepareNotificationLikeComment(Context context, String title, String msg, String post_id, String type, String notification_id) {
+    private void prepareNotificationLikeComment(Context context, String title, String msg,
+                                                String post_id, String type, String notification_id) {
         NotificationManager manager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -191,7 +198,7 @@ public class MyFirebaseMessengingService extends FirebaseMessagingService {
         manager.notify(Calendar.getInstance().get(Calendar.MILLISECOND), notification);
     }
 
-    private void prepareNotification(Context context, String title, String msg, int type, Bundle intent_bundle) {
+    private void prepareNotification(Context context, String title, String msg, int type) {
         NotificationManager manager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
