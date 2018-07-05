@@ -73,7 +73,7 @@ public class LoginActivity extends Activity {
         FacebookSdk.sdkInitialize(LoginActivity.this.getApplicationContext());
 //        mcallbackManager = CallbackManager.Factory.create();
         //--------
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.cync_cover, getBaseContext().getTheme()));
         } else {
             getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.cync_cover));
