@@ -6,14 +6,13 @@ package com.utils;
 public interface Constants {
 
 
-    String liveURL = "http://cync.com.au/cyncapp";
-    String baseDomain = "http://opensource.zealousys.com:81/cync";
+    String liveURL = "https://cync.com.au/cyncapp";
+    //String baseDomain = "http://opensource.zealousys.com:81/cync";
 
-//    String imagBaseUrl = "http://opensource.zealousys.com:81/cync/wp-content/uploads/";
+    //    String imagBaseUrl = "http://opensource.zealousys.com:81/cync/wp-content/uploads/";
 //    String baseUrl = baseDomain + "/wp-content/themes/cync/webservices";
-    String imagBaseUrl = "http://cync.com.au/cyncapp/wp-content/uploads/";
-    String baseUrl = liveURL+"/wp-content/themes/cync/webservices";
-
+    String imagBaseUrl = "https://cync.com.au/cyncapp/wp-content/uploads/";
+    String baseUrl = liveURL + "/wp-content/themes/cync/webservices";
 
     String loginUrl = baseUrl + "/login.php?";
     String registerUrl = baseUrl + "/registration.php?";
@@ -72,11 +71,10 @@ public interface Constants {
     String get_myrideUrl = baseUrl + "/get_myride.php";
     String delete_rideUrl = baseUrl + "/delete_ride.php";
 
-//    public static String domain = "@wampserver";
+    //    public static String domain = "@wampserver";
 //    public static final String HOST = "demo.zealousys.com";
-  public static String domain = "@s132-148-17-112.secureserver.net";
-  public static final String HOST = "132.148.17.112";
-
+    public static String domain = "@s132-148-17-112.secureserver.net";
+    public static final String HOST = "132.148.17.112";
 
 
 }
