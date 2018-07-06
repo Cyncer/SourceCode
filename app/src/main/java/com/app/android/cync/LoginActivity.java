@@ -71,6 +71,7 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         //---------FB
         FacebookSdk.sdkInitialize(LoginActivity.this.getApplicationContext());
+
 //        mcallbackManager = CallbackManager.Factory.create();
         //--------
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -484,23 +485,21 @@ public class LoginActivity extends Activity {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
 //                        Log.e("Success", "Success");
+                        VolleySetup.trustCertificate();
+                        // HttpsURLConnection.setDefaultSSLSocketFactory(VolleySetup.getSocketFactory(LoginActivity.this));
                         GraphRequest request = GraphRequest.newMeRequest(
                                 loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                                     @Override
                                     public void onCompleted(JSONObject json1, GraphResponse response) {
                                         if (response.getError() != null) {
                                             // handle error
-//                                            Log.e("ERROR", "");
+                                            Log.e("ERROR", "" + response.getError().toString());
                                         } else {
 //                                            Log.e("Success", "");
                                             JSONObject json = response.getJSONObject();
                                             Log.e("Response", "Fb Data===" + json.toString());
 
-
                                             try {
-
-//
-
                                                 if (json.has("id")) {
                                                     st_id = json.getString("id");
                                                 }
