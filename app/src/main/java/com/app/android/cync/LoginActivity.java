@@ -164,6 +164,9 @@ public class LoginActivity extends Activity {
                 currentLat = gps.getLatitude();
                 currentLng = gps.getLongitude();
                 final String deviceToken = CommonClass.getDeviceToken(LoginActivity.this);
+
+                Log.i("TOKEN", "deviceToken-> " + deviceToken);
+
                 boolean valid = ValidateTask(login_email.getText().toString().trim(), login_password.getText().toString().trim());
                 if (valid) {
                     if (validLatLngToken("" + currentLat, "" + currentLng, deviceToken)) {
@@ -345,7 +348,6 @@ public class LoginActivity extends Activity {
         };
     }
 
-
     //
     private boolean validLatLngToken(String lat, String lng, String deviceToken) {
         Log.e("validLatLngToken", "lat--- " + lat + "lng--- " + lng + "deviceToken--- " + deviceToken);
@@ -484,9 +486,7 @@ public class LoginActivity extends Activity {
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
-//                        Log.e("Success", "Success");
-                        VolleySetup.trustCertificate();
-                        // HttpsURLConnection.setDefaultSSLSocketFactory(VolleySetup.getSocketFactory(LoginActivity.this));
+                        Log.i("Success", "FB Success");
                         GraphRequest request = GraphRequest.newMeRequest(
                                 loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                                     @Override

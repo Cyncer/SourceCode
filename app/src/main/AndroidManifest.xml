@@ -63,8 +63,10 @@
 
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:autoVerify="true"
                     android:host="opensource.zealousys.com"
@@ -73,11 +75,12 @@
             </intent-filter>
 
 
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:autoVerify="true"
                     android:host="opensource.zealousys.com"
@@ -88,8 +91,10 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:autoVerify="true"
                     android:host="cync.com.au"
@@ -108,11 +113,13 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
-                    android:scheme="https"
-                    android:host="cync.com.au" />
+                    android:host="cync.com.au"
+                    android:scheme="https" />
             </intent-filter>
 
 
@@ -269,16 +276,14 @@
         </receiver>
 
         <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
-        <service
-            android:name="com.firebase.MyFirebaseMessengingService">
+        <service android:name="com.firebase.MyFirebaseMessengingService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service
-            android:name="com.firebase.MyFirebaseInstantIdService">
+        <service android:name="com.firebase.MyFirebaseInstantIdService">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
 

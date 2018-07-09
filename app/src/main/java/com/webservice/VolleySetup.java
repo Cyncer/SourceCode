@@ -93,12 +93,12 @@ public class VolleySetup {
                 }
             };
 
-            HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+            //HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
             SSLContext sslContext = null;
             sslContext = SSLContext.getInstance("TLS");
 
             sslContext.init(null, tmf.getTrustManagers(), null);
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            //HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
             return sf;
