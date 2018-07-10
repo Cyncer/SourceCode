@@ -26,9 +26,9 @@ android {
         applicationId "com.app.android.cync"
         minSdkVersion 19
         multiDexEnabled true
-        targetSdkVersion 22
-        versionCode 42
-        versionName "3.2.6"
+        targetSdkVersion 23
+        versionCode 44
+        versionName "3.2.7.1"
         signingConfig signingConfigs.finalSign
     }
 
