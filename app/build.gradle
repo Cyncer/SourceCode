@@ -27,8 +27,8 @@ android {
         minSdkVersion 19
         multiDexEnabled true
         targetSdkVersion 22
-        versionCode 45
-        versionName "3.2.8"
+        versionCode 46
+        versionName "3.2.9"
         signingConfig signingConfigs.finalSign
     }
 
