@@ -37,8 +37,16 @@ public class MyFirebaseMessengingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         Log.i(TAG, "data->" + remoteMessage.getData());
+//        Handler handler = new Handler(Looper.getMainLooper());
+//        handler.post(new Runnable() {
+//            public void run() {
+//                Toast.makeText(MyFirebaseMessengingService.this, "Push Notification", Toast.LENGTH_LONG).show();
+//            }
+//        });
+
         setupNotification(remoteMessage.getData());
     }
+
 
     /*{
             "status":true,
@@ -68,6 +76,8 @@ public class MyFirebaseMessengingService extends FirebaseMessagingService {
 
                 if (senderId == null)
                     senderId = "";
+                if (msg == null)
+                    msg = "";
 
                 if (data.containsKey("ty+pe")) {
                     type = data.get("ty+pe");
