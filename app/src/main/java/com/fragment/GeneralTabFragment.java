@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.adapter.GenralNotificationTabAdapter;
 import com.adapter.GenralNotificationTabAdapter.SetFragment;
@@ -109,7 +108,7 @@ public class GeneralTabFragment extends BaseContainerFragment implements SetFrag
                     requestparam.put("user_id", "" + CommonClass.getUserpreference(getActivity()).user_id);
                     requestparam.put("timezone", "" + TimeZone.getDefault().getID());
 
-                    Log.e("deleteNotifications  Request", "==> " + requestparam);
+                    Log.e("deleteNotifi Request", "==> " + requestparam);
                     return requestparam;
                 }
             };
@@ -420,6 +419,7 @@ public class GeneralTabFragment extends BaseContainerFragment implements SetFrag
                     mRecyclerView.setAdapter(mAdapter);
                 }
             } else {
+                if (notificationArrayList == null) notificationArrayList = new ArrayList<>();
                 notificationArrayList.clear();
                 txtNodata.setVisibility(View.VISIBLE);
                 mAdapter = new GenralNotificationTabAdapter(mActivity, notifyDetail);
