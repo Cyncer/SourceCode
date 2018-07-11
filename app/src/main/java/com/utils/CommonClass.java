@@ -458,7 +458,7 @@ public class CommonClass {
     }
 
     public static void setPrefranceByKey_Value(Context ct, String prefrence, String key, String value) {
-
+        if (ct == null) return;
         @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences(prefrence, ct.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();

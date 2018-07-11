@@ -26,9 +26,9 @@ android {
         applicationId "com.app.android.cync"
         minSdkVersion 19
         multiDexEnabled true
-        targetSdkVersion 22
-        versionCode 46
-        versionName "3.2.9"
+        targetSdkVersion 23
+        versionCode 45
+        versionName "3.2.8"
         signingConfig signingConfigs.finalSign
     }
 
@@ -77,6 +77,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:11.8.0'
     implementation 'com.google.android.gms:play-services-location:11.8.0'
     implementation 'com.google.android.gms:play-services-analytics:11.8.0'
+    implementation 'com.google.android.gms:play-services-location:11.8.0'
 
     implementation 'com.google.firebase:firebase-appindexing:11.8.0'
 

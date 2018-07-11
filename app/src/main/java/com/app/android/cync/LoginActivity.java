@@ -1,12 +1,17 @@
 package com.app.android.cync;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.method.PasswordTransformationMethod;
@@ -15,6 +20,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -33,7 +39,7 @@ import com.rey.material.widget.Button;
 import com.rey.material.widget.TextView;
 import com.utils.CommonClass;
 import com.utils.Constants;
-import com.utils.GPSTracker;
+import com.utils.GoogleLocationHelper;
 import com.utils.TextValidator;
 import com.webservice.VolleySetup;
 import com.webservice.VolleyStringRequest;
@@ -53,18 +59,25 @@ import java.util.TimeZone;
  */
 public class LoginActivity extends Activity {
 
-    materialEditText login_email, login_password;
-    TextView tvForgot;
-    Button login_btn, facbook_btn, reg_btn;
+    private static final String TAG = LoginActivity.class.getSimpleName();
+
+    private static final int MY_PERMISSIONS_REQUEST_ALL = 1000;
+    private static final int REQ_APP_SETTINGS = 201;
+
+    private materialEditText login_email, login_password;
+    private TextView tvForgot;
+    private Button login_btn, facbook_btn, reg_btn;
+    private AlertDialog.Builder builder = null;
+
     private RequestQueue mQueue;
-    double currentLat, currentLng;
+    private double currentLat, currentLng;
     //-----
-    GPSTracker gps;
-    boolean isFBLogin = false;
-    AlertDialog.Builder builder = null;
+    // GPSTracker gps;
+    private boolean isFBLogin = false;
 
-    String ride_id = "";
+    private String ride_id = "";
 
+    private UserDetail ud = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +85,6 @@ public class LoginActivity extends Activity {
         //---------FB
         FacebookSdk.sdkInitialize(LoginActivity.this.getApplicationContext());
 
-//        mcallbackManager = CallbackManager.Factory.create();
-        //--------
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.cync_cover, getBaseContext().getTheme()));
         } else {
@@ -81,59 +92,135 @@ public class LoginActivity extends Activity {
         }
         setContentView(R.layout.activity_login);
         mQueue = VolleySetup.getRequestQueue();
+
         CommonClass.updateGCMID();
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
-
-
             if (bundle.containsKey("ride_id")) {
                 ride_id = bundle.getString("ride_id", "");
             }
         }
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         init();
-        getWindow().setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        );
 
+        if (checkLocationPermissionGranted()) {
+            GoogleLocationHelper.getGoogleLocationHelper(this).start();
+        }
 
+        requestRuntimePermission();
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        if (!gps.canGetLocation())
-//            gps.showSettingsAlert();
-//    }
+    private void testPermission(String p) {
+        boolean required = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED;
+        Log.i(TAG, "Permission:" + p + " required->" + required);
+    }
+
+    private void requestRuntimePermission() {
+        if (!checkLocationPermissionGranted()
+                || checkExternalStoragePermission()
+                || checkPhoneStatePermission()) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_PHONE_STATE},
+                    MY_PERMISSIONS_REQUEST_ALL);
+        }
+    }
+
+    /**
+     * This will be shown when user dont give permission and uses "Do not show" tick mark at
+     * runtime permission
+     */
+    private void showPermissionNotGivenAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
+        builder.setTitle("Permission Required!");
+        builder.setMessage("Cync requires all permissions to work properly. Please enable all permissions toggle buttons.\nApplication Settings-> App permissions -> Permission Toggles.\n\nDo you want to give permissions?");
+        builder.setPositiveButton("PROCEED", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                openAppSettings();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //no action on cancel click
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void openAppSettings() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivityForResult(intent, REQ_APP_SETTINGS);
+    }
+
+    private boolean checkAllPermission() {
+        return checkLocationPermissionGranted()
+                && checkPhoneStatePermission()
+                && checkExternalStoragePermission();
+    }
+
+    private boolean checkLocationPermissionGranted() {
+        return ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean checkExternalStoragePermission() {
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean checkPhoneStatePermission() {
+        return ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ALL: {
+                // If request is cancelled, the result arrays are empty.
+
+                if (checkAllPermission()) {
+                    //all fine
+                    //getLocationFromGPS();
+                    getGoogleLocation();
+                } else {
+                    //request again
+
+                    showPermissionNotGivenAlertDialog();
+
+                    /*if (checkLocationPermissionGranted()) {
+                        getGoogleLocation();
+                    }*/
+                }
+            }
+        }
+    }
+
+
+    private void getGoogleLocation() {
+        GoogleLocationHelper.getGoogleLocationHelper(this).start();
+    }
 
     private void init() {
 //        FacebookSdk.sdkInitialize(getApplicationContext());
 //        LoginManager.getInstance().logOut();
         builder = null;
-        gps = new GPSTracker(LoginActivity.this);
-// check if GPS enabled
-        if (gps.canGetLocation()) {
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
-            CommonClass.setPrefranceByKey_Value(LoginActivity.this,
-                    CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
-                    CommonClass.KEY_Current_Lat, String.valueOf(latitude));
-            CommonClass.setPrefranceByKey_Value(LoginActivity.this,
-                    CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
-                    CommonClass.KEY_Current_Lng, String.valueOf(longitude));
-            // \n is for new line
-            // Toast.makeText(getApplicationContext(),
-            // "Your Location is - \nLat: " + latitude + "\nLong: " +
-            // longitude, Toast.LENGTH_LONG).show();
-        } else {
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
-        }
-        //---------------
 
         login_email = (materialEditText) findViewById(R.id.login_email);
         login_password = (materialEditText) findViewById(R.id.login_password);
@@ -161,8 +248,28 @@ public class LoginActivity extends Activity {
         login_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentLat = gps.getLatitude();
-                currentLng = gps.getLongitude();
+
+                if (!checkAllPermission()) {
+                    showPermissionNotGivenAlertDialog();
+                    return;
+                }
+
+                if (GoogleLocationHelper
+                        .getGoogleLocationHelper(LoginActivity.this)
+                        .getLocation() == null) {
+
+                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
+
+                    Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Location location = GoogleLocationHelper
+                        .getGoogleLocationHelper(LoginActivity.this)
+                        .getLocation();
+
+                currentLat = location.getLatitude();
+                currentLng = location.getLongitude();
                 final String deviceToken = CommonClass.getDeviceToken(LoginActivity.this);
 
                 Log.i("TOKEN", "deviceToken-> " + deviceToken);
@@ -205,8 +312,29 @@ public class LoginActivity extends Activity {
         facbook_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent i = new Intent(LoginActivity.this, NavigationDrawerActivity.class);
-//                startActivity(i);
+
+                if (!checkAllPermission()) {
+                    showPermissionNotGivenAlertDialog();
+                    return;
+                }
+
+                if (GoogleLocationHelper
+                        .getGoogleLocationHelper(LoginActivity.this)
+                        .getLocation() == null) {
+
+                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
+
+                    Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Location location = GoogleLocationHelper
+                        .getGoogleLocationHelper(LoginActivity.this)
+                        .getLocation();
+
+                currentLat = location.getLatitude();
+                currentLng = location.getLongitude();
+
                 loginFB();
 
             }
@@ -215,6 +343,12 @@ public class LoginActivity extends Activity {
         reg_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if (!checkAllPermission()) {
+                    showPermissionNotGivenAlertDialog();
+                    return;
+                }
+
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
                 intent.putExtra("ride_id", ride_id);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -228,7 +362,6 @@ public class LoginActivity extends Activity {
 //         lng = CommonClass.getPrefranceByKey_Value(LoginActivity.this, CommonClass.KEY_PREFERENCE_CURRENT_LOCATION, CommonClass.KEY_Current_Lng);
     }
 
-    UserDetail ud = null;
 
     private com.android.volley.Response.Listener<String> loginSuccessLisner() {
         return new com.android.volley.Response.Listener<String>() {
@@ -456,12 +589,27 @@ public class LoginActivity extends Activity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mcallbackManager.onActivityResult(requestCode, resultCode, data);
+
+        if (GoogleLocationHelper.checkIsGoogleLocationActivityResult(requestCode)) {
+            GoogleLocationHelper.getGoogleLocationHelper(this).onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+
+        switch (requestCode) {
+            case REQ_APP_SETTINGS: {
+                GoogleLocationHelper.getGoogleLocationHelper(this).start();
+                return;
+            }
+        }
+
+        if (mcallbackManager != null) {
+            mcallbackManager.onActivityResult(requestCode, resultCode, data);
+        }
         System.out.println("Result code is == " + requestCode);
         System.out.println("Request code is == " + requestCode);
         System.out.println("DAta is  == " + data);
 //        CommonClass.ShowToast(LoginActivity.this,"requestCode"+requestCode+"  ---"+data.getDataString());
-        if (appInstalledOrNot("com.facebook.katana")) {
+       /* if (appInstalledOrNot("com.facebook.katana")) {
 //            System.out.println("if==loginFB " );
             if (!isFBLogin) {
                 loginFB();
@@ -470,7 +618,7 @@ public class LoginActivity extends Activity {
         } else {
 //            isFBLogin = true;
 //            System.out.println("else ==loginFB " );
-        }
+        }*/
 
     }
 
@@ -575,9 +723,6 @@ public class LoginActivity extends Activity {
     }
 
     public void loginWebservice(final String strId, final String strName, String strImage, final String strFristname, final String strLastname) {
-//        Log.e("loginWebservice", "" + strFristname + " " + strLastname);
-        currentLat = gps.getLatitude();
-        currentLng = gps.getLongitude();
         final String deviceToken = CommonClass.getDeviceToken(LoginActivity.this);
 
         boolean valid = validLatLngToken("" + currentLat, "" + currentLng, deviceToken);
@@ -590,37 +735,35 @@ public class LoginActivity extends Activity {
                     loginErrorLisner()) {
                 @Override
                 protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
-                    HashMap<String, String> requestparam = new HashMap<>();
+                    HashMap<String, String> requestParam = new HashMap<>();
 //                requestparam.put("facebook_username", strName);
-                    requestparam.put("first_name", strFristname);
-                    requestparam.put("last_name", strLastname);
-                    requestparam.put("facebook_id", strId);
-                    requestparam.put("facebook_image", finalStrImage);
-                    requestparam.put("device_token", deviceToken);
-                    requestparam.put("device_type", "android");
-                    requestparam.put("latitude", "" + currentLat);
-                    requestparam.put("longitude", "" + currentLng);
-                    requestparam.put("login_type", "facebook");
-                    requestparam.put("timezone", "" + TimeZone.getDefault().getID());
-                    Log.d("facebook Request", "==> " + requestparam);
+                    requestParam.put("first_name", strFristname);
+                    requestParam.put("last_name", strLastname);
+                    requestParam.put("facebook_id", strId);
+                    requestParam.put("facebook_image", finalStrImage);
+                    requestParam.put("device_token", deviceToken);
+                    requestParam.put("device_type", "android");
+                    requestParam.put("latitude", "" + currentLat);
+                    requestParam.put("longitude", "" + currentLng);
+                    requestParam.put("login_type", "facebook");
+                    requestParam.put("timezone", "" + TimeZone.getDefault().getID());
+                    Log.d("facebook Request", "==> " + requestParam);
 
-
-                    for (Map.Entry<String, String> entry : requestparam.entrySet()) {
+                    /*for (Map.Entry<String, String> entry : requestParam.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
 
                         Log.i("LoginActivity", "" + key + ":" + value);
                         // do stuff
-                    }
-
-
-                    return requestparam;
+                    }*/
+                    return requestParam;
                 }
             };
             CommonClass.showLoading(LoginActivity.this);
             mQueue.add(apiRequest);
-        } else
+        } else {
             CommonClass.ShowToast(LoginActivity.this, getResources().getString(R.string.s_wrong));
+        }
     }
 
     @Override
