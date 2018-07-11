@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ApplicationController;
 import com.app.android.cync.CyncTankDetailsActiivty;
@@ -37,12 +40,12 @@ public class MyFirebaseMessengingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         Log.i(TAG, "data->" + remoteMessage.getData());
-//        Handler handler = new Handler(Looper.getMainLooper());
-//        handler.post(new Runnable() {
-//            public void run() {
-//                Toast.makeText(MyFirebaseMessengingService.this, "Push Notification", Toast.LENGTH_LONG).show();
-//            }
-//        });
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            public void run() {
+                Toast.makeText(MyFirebaseMessengingService.this, "You have a notification", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         setupNotification(remoteMessage.getData());
     }

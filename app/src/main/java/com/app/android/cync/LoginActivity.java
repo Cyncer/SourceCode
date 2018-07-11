@@ -79,11 +79,22 @@ public class LoginActivity extends Activity {
 
     private UserDetail ud = null;
 
+    private CallbackManager mcallbackManager;
+    private String st_email = "", st_id = "", st_name = "", st_gender = "", user_photos = "";
+    private String st_firstname = "", st_lastname = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //---------FB
-        FacebookSdk.sdkInitialize(LoginActivity.this.getApplicationContext());
+        FacebookSdk.sdkInitialize(getApplicationContext());
+
+        //perhaps a bit excessive
+        /*FacebookSdk.addLoggingBehavior(LoggingBehavior.GRAPH_API_DEBUG_INFO);
+        FacebookSdk.addLoggingBehavior(LoggingBehavior.DEVELOPER_ERRORS);
+        FacebookSdk.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
+        FacebookSdk.addLoggingBehavior(LoggingBehavior.INCLUDE_RAW_RESPONSES);
+        */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.cync_cover, getBaseContext().getTheme()));
@@ -212,14 +223,11 @@ public class LoginActivity extends Activity {
         }
     }
 
-
     private void getGoogleLocation() {
         GoogleLocationHelper.getGoogleLocationHelper(this).start();
     }
 
     private void init() {
-//        FacebookSdk.sdkInitialize(getApplicationContext());
-//        LoginManager.getInstance().logOut();
         builder = null;
 
         login_email = (materialEditText) findViewById(R.id.login_email);
@@ -257,9 +265,7 @@ public class LoginActivity extends Activity {
                 if (GoogleLocationHelper
                         .getGoogleLocationHelper(LoginActivity.this)
                         .getLocation() == null) {
-
                     GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
-
                     Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -321,9 +327,7 @@ public class LoginActivity extends Activity {
                 if (GoogleLocationHelper
                         .getGoogleLocationHelper(LoginActivity.this)
                         .getLocation() == null) {
-
                     GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
-
                     Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -336,7 +340,6 @@ public class LoginActivity extends Activity {
                 currentLng = location.getLongitude();
 
                 loginFB();
-
             }
         });
         reg_btn = (Button) findViewById(R.id.reg_btn);
@@ -588,6 +591,10 @@ public class LoginActivity extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //callbackManager.onActivityResult(requestCode, resultCode, data);
+        if (mcallbackManager != null) {
+            mcallbackManager.onActivityResult(requestCode, resultCode, data);
+        }
         super.onActivityResult(requestCode, resultCode, data);
 
         if (GoogleLocationHelper.checkIsGoogleLocationActivityResult(requestCode)) {
@@ -602,14 +609,11 @@ public class LoginActivity extends Activity {
             }
         }
 
-        if (mcallbackManager != null) {
-            mcallbackManager.onActivityResult(requestCode, resultCode, data);
-        }
         System.out.println("Result code is == " + requestCode);
         System.out.println("Request code is == " + requestCode);
         System.out.println("DAta is  == " + data);
 //        CommonClass.ShowToast(LoginActivity.this,"requestCode"+requestCode+"  ---"+data.getDataString());
-       /* if (appInstalledOrNot("com.facebook.katana")) {
+        /*if (appInstalledOrNot("com.facebook.katana")) {
 //            System.out.println("if==loginFB " );
             if (!isFBLogin) {
                 loginFB();
@@ -619,17 +623,11 @@ public class LoginActivity extends Activity {
 //            isFBLogin = true;
 //            System.out.println("else ==loginFB " );
         }*/
-
     }
-
-    private CallbackManager mcallbackManager;
-    String st_email = "", st_id = "", st_name = "", st_gender = "", user_photos = "";
-    String st_firstname = "", st_lastname = "";
 
     private void loginFB() {
         mcallbackManager = CallbackManager.Factory.create();
 
-        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
         LoginManager.getInstance().registerCallback(mcallbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
@@ -706,12 +704,12 @@ public class LoginActivity extends Activity {
                         logoutFB();
                     }
                 });
+        LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this,
+                Arrays.asList("public_profile", "email"));
     }
 
     private void logoutFB() {
         try {
-
-            FacebookSdk.sdkInitialize(getApplicationContext());
             LoginManager.getInstance().logOut();
             CommonClass.ClearUserpreference(LoginActivity.this);
             CommonClass.ClearChatUserpreference(LoginActivity.this);

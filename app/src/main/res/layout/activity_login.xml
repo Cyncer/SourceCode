@@ -1,5 +1,4 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
@@ -53,21 +52,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/mail_icon"
-                    android:lines="1"
                     android:elevation="4dp"
                     android:hint="Email Address"
-                    android:inputType="textEmailAddress" />
+                    android:inputType="textEmailAddress"
+                    android:lines="1" />
+
                 <com.customwidget.materialEditText
                     android:id="@+id/login_password"
                     style="@style/avtMaterialEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:lines="1"
                     android:drawableLeft="@drawable/password_icon"
                     android:elevation="4dp"
-                    android:singleLine="true"
                     android:hint="@string/password"
-                     />
+                    android:lines="1"
+                    android:singleLine="true" />
 
                 <com.rey.material.widget.TextView
                     android:id="@+id/tvForgot"
@@ -78,10 +77,10 @@
                     android:layout_gravity="right"
                     android:paddingBottom="10dp"
 
-                    android:textColor="@color/white"
                     android:paddingLeft="10dp"
                     android:paddingTop="10dp"
                     android:text="Forgot Password?"
+                    android:textColor="@color/white"
                     android:textSize="14dp" />
 
                 <com.rey.material.widget.Button
@@ -92,8 +91,8 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="20dp"
                     android:layout_marginTop="10dp"
-                    android:elevation="4dp"
                     android:background="@color/colorPrimaryDark_black"
+                    android:elevation="4dp"
                     android:text="LOGIN"
                     android:textColor="#FFFFFF" />
 
@@ -133,9 +132,20 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="20dp"
-                    android:elevation="4dp"
                     android:layout_marginTop="20dp"
-                    android:background="@drawable/fb_btn" />
+                    android:background="@drawable/fb_btn"
+                    android:elevation="4dp"
+                    android:visibility="visible" />
+
+                <!--<com.facebook.login.widget.LoginButton
+                    android:id="@+id/login_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Cync with Facebook"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="20dp" />-->
+
             </LinearLayout>
 
             <LinearLayout
@@ -152,15 +162,14 @@
         style="@style/itemMaterialRippalWaveStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:textSize="15dp"
-        android:gravity="center"
-        android:ems="10"
         android:layout_alignParentBottom="true"
+        android:layout_marginTop="10dp"
         android:background="@color/colorPrimaryDark_black"
+        android:ems="10"
+        android:gravity="center"
         android:text="@string/txt_register"
         android:textColor="#FFFFFF"
-         />
+        android:textSize="15dp" />
 
 
 </RelativeLayout>
