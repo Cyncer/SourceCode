@@ -22,7 +22,6 @@ android {
     //buildToolsVersion '27.0.3'
 
     defaultConfig {
-
         applicationId "com.app.android.cync"
         minSdkVersion 19
         multiDexEnabled true
