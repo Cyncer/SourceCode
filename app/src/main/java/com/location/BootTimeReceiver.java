@@ -18,9 +18,9 @@ public class BootTimeReceiver extends BroadcastReceiver {
         db = new LocationDatabase(ctxt);
 
 
-        CommonClass.setlocationServicepreference(
+        CommonClass.setLocationServiceStartStopPreference(
                 ctxt, "false");
-        CommonClass.setlocationServiceCurrentState(ctxt, R.drawable.btn_record);
+        CommonClass.setLocationServiceCurrentState(ctxt, R.drawable.btn_record);
         db.deleteAllData();
         CommonClass.clearPauseInterval(ctxt);
 

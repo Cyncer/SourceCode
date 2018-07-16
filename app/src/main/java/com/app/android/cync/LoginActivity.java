@@ -118,7 +118,7 @@ public class LoginActivity extends Activity {
         init();
 
         if (checkLocationPermissionGranted()) {
-            GoogleLocationHelper.getGoogleLocationHelper(this).start();
+            GoogleLocationHelper.getGoogleLocationHelper(this).singleLocation(null);
         }
 
         requestRuntimePermission();
@@ -224,7 +224,7 @@ public class LoginActivity extends Activity {
     }
 
     private void getGoogleLocation() {
-        GoogleLocationHelper.getGoogleLocationHelper(this).start();
+        GoogleLocationHelper.getGoogleLocationHelper(this).singleLocation(null);
     }
 
     private void init() {
@@ -262,17 +262,13 @@ public class LoginActivity extends Activity {
                     return;
                 }
 
-                if (GoogleLocationHelper
-                        .getGoogleLocationHelper(LoginActivity.this)
-                        .getLocation() == null) {
-                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
+                if (GoogleLocationHelper.getLocationDirect()==null) {
+                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).singleLocation(null);
                     Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                Location location = GoogleLocationHelper
-                        .getGoogleLocationHelper(LoginActivity.this)
-                        .getLocation();
+                Location location = GoogleLocationHelper.getLocationDirect();
 
                 currentLat = location.getLatitude();
                 currentLng = location.getLongitude();
@@ -324,17 +320,13 @@ public class LoginActivity extends Activity {
                     return;
                 }
 
-                if (GoogleLocationHelper
-                        .getGoogleLocationHelper(LoginActivity.this)
-                        .getLocation() == null) {
-                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).start();
+                if (GoogleLocationHelper.getLocationDirect() == null) {
+                    GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).singleLocation(null);
                     Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                Location location = GoogleLocationHelper
-                        .getGoogleLocationHelper(LoginActivity.this)
-                        .getLocation();
+                Location location = GoogleLocationHelper.getLocationDirect();
 
                 currentLat = location.getLatitude();
                 currentLng = location.getLongitude();
@@ -602,7 +594,7 @@ public class LoginActivity extends Activity {
 
         switch (requestCode) {
             case REQ_APP_SETTINGS: {
-                GoogleLocationHelper.getGoogleLocationHelper(this).start();
+                GoogleLocationHelper.getGoogleLocationHelper(this).singleLocation(null);
                 return;
             }
         }

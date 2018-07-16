@@ -1,6 +1,7 @@
 package com.fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -19,7 +21,11 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -38,6 +44,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ApplicationController;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
@@ -54,12 +61,6 @@ import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -79,7 +80,7 @@ import com.rey.material.widget.Button;
 import com.utils.CommonClass;
 import com.utils.ConnectionDetector;
 import com.utils.Constants;
-import com.utils.GPSTracker;
+import com.utils.GoogleLocationHelper;
 import com.webservice.VolleySetup;
 import com.webservice.VolleyStringRequest;
 
@@ -107,9 +108,7 @@ import static android.view.View.VISIBLE;
  * Created by ketul.patel on 8/1/16.
  */
 public class HomeFragment extends BaseContainerFragment implements
-        LocationListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, OnMapReadyCallback {
+        View.OnClickListener, OnMapReadyCallback, GoogleLocationHelper.OnLocation {
 
     private static final int SHARE_CODE = 104;
     boolean onlyOnce = true;
@@ -135,8 +134,8 @@ public class HomeFragment extends BaseContainerFragment implements
     int selectedinterval;
 
     BroadcastReceiver updateUIReciver;
-    static LocationDatabase db;
-    ImageView imgPlayPause, imgFinish;
+    private static LocationDatabase db;
+    private ImageView imgPlayPause, imgFinish;
 
     RelativeLayout rlTrack;
 
@@ -150,13 +149,8 @@ public class HomeFragment extends BaseContainerFragment implements
     //------- Google Map
     MapView mapView;
     GoogleMap googleMap;
-    GPSTracker gps;
+    /*GPSTracker gps;*/
     ImageView imgMyLocation;
-    double currentLat = 0.0, currentLng = 0.0;
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
-    Location mCurrentLocation;
-    Activity mActivity;
     LocationManager mLocationManager;
 
     List<LatLng> latLngList = new ArrayList<LatLng>();
@@ -172,101 +166,59 @@ public class HomeFragment extends BaseContainerFragment implements
     Marker markerLoginUser = null;
     ViewGroup rootViewMain;
     String ride_id = "";
+    private Activity activity;
 
     public HomeFragment() {
-
     }
 
-
+    @SuppressLint("ValidFragment")
     public HomeFragment(String ride_id) {
         // Required empty public constructor
         this.ride_id = ride_id;
-
-
-    }
-
-
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(INTERVAL);
-        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FacebookSdk.sdkInitialize(getActivity().getApplicationContext());
-        mLocationManager = (LocationManager) getActivity().getSystemService(getActivity().LOCATION_SERVICE);
+
+        activity = getActivity();
+
+        FacebookSdk.sdkInitialize(activity.getApplicationContext());
+        mLocationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         if (!isGooglePlayServicesAvailable()) {
-            mActivity.finish();
+            activity.finish();
         }
 
         showProgress();
-        db = new LocationDatabase(getActivity());
-        createLocationRequest();
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
-            mGoogleApiClient.connect();
+        db = new LocationDatabase(activity);
 
+        GoogleLocationHelper.getGoogleLocationHelper(activity).singleLocation(null);
 
         boolean showMessage = CheckValid();
-
-//        if (CommonClass.getIsFirstTimepreference(getActivity()).equals("true") && showMessage) {
-//            Handler handler = new Handler();
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//
-//
-//                    CommonClass.setIsFirstTimepreference(getActivity(), "false");
-//
-//                    Toast.makeText(getActivity(), "Don't forget to add your ride! Go to your profile to select your motorcycle  make and model.", Toast.LENGTH_LONG).show();
-//
-//                }
-//
-//            }, 7000);
-//
-//        }
-
-//        if (intent != null) {
-//            Uri data = intent.getData();
-//            if (data != null) {
-//                Log.i(TAG, "onNewIntent: received, with data: " + data.getQueryParameter("ride_id"));
-//                ride_id = data.getQueryParameter("ride_id");
-//
-//                Log.i(TAG, "onCreate: Ride id="+ride_id);
-//                intent.replaceExtras(new Bundle());
-//                intent.setAction("");
-//                intent.setData(null);
-//                intent.setFlags(0);
-//
-//            }
-//
-//
-//        }
     }
 
     private boolean CheckValid() {
-
-
-        if (CommonClass.getUserpreference(getActivity()).make.trim().length() > 0 && CommonClass.getUserpreference(getActivity()).year.trim().length() > 0 && CommonClass.getUserpreference(getActivity()).model.trim().length() > 0) {
+        if (CommonClass.getUserpreference(activity)
+                .make.trim().length() > 0 && CommonClass.getUserpreference(activity)
+                .year.trim().length() > 0 && CommonClass.getUserpreference(activity)
+                .model.trim().length() > 0) {
             return false;
-        } else
+        } else {
             return true;
-
-
+        }
     }
 
-
-    public void checkGPSon() {
-        if (CommonClass.doWeHavePermisiionForFromFragment(getActivity(), this, Manifest.permission.ACCESS_FINE_LOCATION, "Needs Location Permission.", true)) {
+    /*public void checkGPSon() {
+        if (CommonClass.doWeHavePermisiionForFromFragment(getActivity(), this,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                "Needs Location Permission.", true)) {
             try {
                 boolean statusOfGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 if (!statusOfGPS) {
                     gps.showSettingsAlert();
                 }
                 if (mGoogleApiClient == null) {
-                    mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                    mGoogleApiClient = new GoogleApiClient.Builder(activity)
                             .addApi(LocationServices.API)
                             .addConnectionCallbacks(this)
                             .addOnConnectionFailedListener(this)
@@ -276,10 +228,10 @@ public class HomeFragment extends BaseContainerFragment implements
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null) {
             isGroupLocation = true;
@@ -290,10 +242,11 @@ public class HomeFragment extends BaseContainerFragment implements
         }
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
         rootViewMain = container;
+
         mQueue = VolleySetup.getRequestQueue();
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
-            mGoogleApiClient.connect();
-        Init(rootView);
+
+        init(rootView);
+
         try {
             mapView.onCreate(savedInstanceState);
             mapView.getMapAsync(this);
@@ -307,16 +260,8 @@ public class HomeFragment extends BaseContainerFragment implements
             ex.printStackTrace();
         }
 
-
-        checkGPSon();
-
-
-        // Inflate the layout for this fragment
-
         IntentFilter filter = new IntentFilter();
-
         filter.addAction("com.inanny.action");
-
         updateUIReciver = new BroadcastReceiver() {
 
             @Override
@@ -330,7 +275,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
             }
         };
-        getActivity().registerReceiver(updateUIReciver, filter);
+        activity.registerReceiver(updateUIReciver, filter);
         return rootView;
     }
 
@@ -338,50 +283,67 @@ public class HomeFragment extends BaseContainerFragment implements
     public void onMapReady(GoogleMap gMap) {
         googleMap = gMap;
         googleMap.getUiSettings().setAllGesturesEnabled(true);
-        getDataFromWeb();
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(false);
+
+            GoogleLocationHelper.getGoogleLocationHelper(activity)
+                    .singleLocation(new GoogleLocationHelper.OnLocation() {
+                        @Override
+                        public void onLocation(Location location) {
+                            //move google map camera to current location
+                            CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
+                                    .target(new LatLng(location.getLatitude(), location.getLongitude()));
+                            cameraBuilder.zoom(10);
+                            CameraPosition cameraPosition = cameraBuilder.build();
+                            if (googleMap != null)
+                                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    getDataFromWeb();
+                                }
+                            });
+                        }
+                    });
+        }
+        /*getDataFromWeb();*/
     }
 
+
     private void getDataFromWeb() {
-        if (CommonClass.getTrackingInterval(getActivity()) == 5000) {
+        if (CommonClass.getTrackingInterval(activity) == 5000) {
             selectedinterval = 0;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 15000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 15000) {
             selectedinterval = 1;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 30000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 30000) {
             selectedinterval = 2;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 60000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 60000) {
             selectedinterval = 3;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 300000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 300000) {
             selectedinterval = 4;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 900000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 900000) {
             selectedinterval = 5;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 1800000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 1800000) {
             selectedinterval = 6;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 3600000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 3600000) {
             selectedinterval = 7;
-        } else if (CommonClass.getTrackingInterval(getActivity()) == 86400000) {
+        } else if (CommonClass.getTrackingInterval(activity) == 86400000) {
             selectedinterval = 8;
         }
 
-
         Log.i(TAG, "onCreateView: Ride Id == " + ride_id);
+        Log.i(TAG, "onCreateView: selectedinterval == " + selectedinterval);
         stopProgress();
 
         if (!isGroupLocation) {
-
-            String ex_ridesm = CommonClass.getRideIds(getActivity());
-
+            String ex_ridesm = CommonClass.getRideIds(activity);
             Log.i(TAG, "onCreateView: Total Rides   = " + ex_ridesm);
-
-
-            if (CommonClass.getRideIds(getActivity()).trim().length() > 0 || ride_id.trim().length() > 0) {
-
-
+            if (CommonClass.getRideIds(activity).trim().length() > 0 || ride_id.trim().length() > 0) {
                 if (ride_id.trim().length() > 0) {
-                    String ex_rides = CommonClass.getRideIds(getActivity());
-
+                    String ex_rides = CommonClass.getRideIds(activity);
                     Log.i(TAG, "onCreateView: Total Rides 1  = " + ex_rides);
-
-
                     String rides[] = ex_rides.split(",");
                     List<String> stringList = new ArrayList<String>(Arrays.asList(rides));
                     if (stringList.indexOf(ride_id) == -1) {
@@ -392,29 +354,21 @@ public class HomeFragment extends BaseContainerFragment implements
                             ex_rides = ride_id;
 
                         Log.i(TAG, "onCreateView: Total Rides 2 = " + ex_rides);
-                        CommonClass.setRideIds(getActivity(), ex_rides);
+                        CommonClass.setRideIds(activity, ex_rides);
                     }
                 }
-
-
                 getRideDetail();
             } else {
-
-                if (CommonClass.getUserpreference(getActivity()).view_my_rides)
+                if (CommonClass.getUserpreference(activity).view_my_rides)
                     getMyRide();
                 else
-                    updateMarker(new LatLng(currentLat, currentLng));
+                    updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                            , GoogleLocationHelper.getLocationDirect().getLongitude()));
             }
         } else {
-            updateMarker(new LatLng(currentLat, currentLng));
+            updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                    , GoogleLocationHelper.getLocationDirect().getLongitude()));
         }
-    }
-
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mActivity = activity;
     }
 
     @Override
@@ -422,11 +376,9 @@ public class HomeFragment extends BaseContainerFragment implements
         super.onDetach();
     }
 
-    public void Init(View view) {
+    public void init(View view) {
         if (isGroupLocation) {
-//            mCurrentLocation=null;
             rlTitle = (RelativeLayout) view.findViewById(R.id.rlTitle);
-
 
             rlTitle.setVisibility(VISIBLE);
             ivBack = (ImageView) view.findViewById(R.id.ivBack);
@@ -458,17 +410,17 @@ public class HomeFragment extends BaseContainerFragment implements
         }
 
 
-        gps = new GPSTracker(getActivity());
+        /* gps = new GPSTracker(activity);*/
 
-//        String lat = CommonClass.getPrefranceByKey_Value(getActivity(), CommonClass.KEY_PREFERENCE_CURRENT_LOCATION, CommonClass.KEY_Current_Lat);
-//        String lng = CommonClass.getPrefranceByKey_Value(getActivity(), CommonClass.KEY_PREFERENCE_CURRENT_LOCATION, CommonClass.KEY_Current_Lng);
+//        String lat = CommonClass.getPrefranceByKey_Value(activity, CommonClass.KEY_PREFERENCE_CURRENT_LOCATION, CommonClass.KEY_Current_Lat);
+//        String lng = CommonClass.getPrefranceByKey_Value(activity, CommonClass.KEY_PREFERENCE_CURRENT_LOCATION, CommonClass.KEY_Current_Lng);
 //        if (lat != null && lat.trim().length() > 0)
 //            currentLat = Double.parseDouble(lat);
 //        if (lng != null && lng.trim().length() > 0)
 //            currentLng = Double.parseDouble(lng);
         mapView = (MapView) view.findViewById(R.id.mapview);
-        currentLat = gps.getLatitude();
-        currentLng = gps.getLongitude();
+        /*currentLat = gps.getLatitude();
+        currentLng = gps.getLongitude();*/
 
 
         rlTrack = (RelativeLayout) view.findViewById(R.id.rlTrack);
@@ -480,58 +432,43 @@ public class HomeFragment extends BaseContainerFragment implements
         //  showPopupMenu();
 
 
-        if (CommonClass.getlocationServicepreference(getActivity())
+        if (CommonClass.getLocationServicePreference(activity)
                 .equalsIgnoreCase("false")) {
 
             Log.i(TAG, "Init: Delete Data ");
 
-
-            if (CommonClass.getlocationServiceCurrentState(getActivity()) == R.drawable.btn_resume) {
+            if (CommonClass.getLocationServiceCurrentState(activity) == R.drawable.btn_resume) {
                 imgPlayPause.setImageResource(R.drawable.btn_resume);
                 imgFinish.setVisibility(VISIBLE);
-
             } else {
                 db.deleteAllData();
                 imgPlayPause.setImageResource(R.drawable.btn_record);
             }
-
-
         } else {
-
             Log.i(TAG, "Init: Delete Data else ");
-            if (CommonClass.getlocationServiceCurrentState(getActivity()) != 0) {
-                imgPlayPause.setImageResource(CommonClass.getlocationServiceCurrentState(getActivity()));
-
-                if (CommonClass.getlocationServiceCurrentState(getActivity()) == R.drawable.btn_resume) {
-
+            if (CommonClass.getLocationServiceCurrentState(activity) != 0) {
+                imgPlayPause.setImageResource(CommonClass.getLocationServiceCurrentState(activity));
+                if (CommonClass.getLocationServiceCurrentState(activity) == R.drawable.btn_resume) {
                     imgFinish.setVisibility(VISIBLE);
-
                 }
-
-            } else
+            } else {
                 imgPlayPause.setImageResource(R.drawable.btn_record);
-
+            }
         }
 
-
         rlTrack.setVisibility(View.GONE);
-
 
         imgMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (googleMap != null /*&& arrayList.size() > 0*/) {
 
-
-                try {
-
-
-                    if (googleMap != null && arrayList.size() > 0) {
-
-                        builder.include(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
+                    if (builder != null) {
+                        if (arrayList.size() > 0)
+                            builder.include(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
+                    }
 //                    CameraPosition cameraPosition = new CameraPosition.Builder()
 //                            .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng)).build();
-//
-//
 //                    LatLngBounds bounds;
 //                    if(mybuilder!=null)
 //                    bounds= mybuilder.build();
@@ -541,22 +478,36 @@ public class HomeFragment extends BaseContainerFragment implements
 //                    googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 35));
 
 
-                        WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-                        Display display = wm.getDefaultDisplay();
-                        DisplayMetrics metrics = new DisplayMetrics();
-                        display.getMetrics(metrics);
-                        int width = metrics.widthPixels;
-                        int height = metrics.heightPixels;
+                    WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+                    Display display = wm.getDefaultDisplay();
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    display.getMetrics(metrics);
+                    int width = metrics.widthPixels;
+                    int height = metrics.heightPixels;
 
 
-                        LatLngBounds bounds;
-                        if (mybuilder != null)
-                            bounds = mybuilder.build();
-                        else
-                            bounds = builder.build();
-                        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngBounds(bounds, width / 3, height / 3, 45);
+                    LatLngBounds bounds;
+                    if (mybuilder != null)
+                        bounds = mybuilder.build();
+                    else
+                        bounds = builder.build();
+                    CameraUpdate yourLocation = CameraUpdateFactory.newLatLngBounds(bounds, width / 3, height / 3, 45);
 
 
+                    Location l = GoogleLocationHelper.getLocationDirect();
+                    if (l != null) {
+                        CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
+                                .target(new LatLng(l.getLatitude(), l.getLongitude()));
+
+                        cameraBuilder.zoom(15);
+
+                        CameraPosition cameraPosition = cameraBuilder.build();
+                        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                        onlyOnce = false;
+                    }
+
+                    if (arrayList.size() > 0) {
                         CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
                                 .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
 
@@ -565,26 +516,12 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         CameraPosition cameraPosition = cameraBuilder.build();
                         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
-                        onlyOnce = false;
                     }
 
-
-                } catch (Exception e) {
-
+                    onlyOnce = false;
                 }
             }
         });
-    }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-//        Log.d(TAG, "onStart fired ..............");
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
-            mGoogleApiClient.connect();
     }
 
     @Override
@@ -608,17 +545,12 @@ public class HomeFragment extends BaseContainerFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(receiver, new IntentFilter("com.cync.location.data"));
+        activity.registerReceiver(receiver, new IntentFilter("com.cync.location.data"));
 
         INTERVAL = 1000 * 20;
         FASTEST_INTERVAL = 1000 * 20;
-        createLocationRequest();
-        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
-            mGoogleApiClient.connect();
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
 
+        GoogleLocationHelper.getGoogleLocationHelper(activity).periodicLocation(this);
 
         try {
             if (mapView != null)
@@ -626,84 +558,41 @@ public class HomeFragment extends BaseContainerFragment implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+
+    /**
+     * Location from GoogleLocationHelper class
+     */
+    @Override
+    public void onLocation(Location location) {
+        //location changed
+        Log.i(TAG, "Location Periodic->" + location.toString());
+
+        if (!CommonClass.getLocationServicePreference(
+                ApplicationController.getInstance()).equalsIgnoreCase("false")) {
+            //If recording started then draw path
+            updateMarker(new LatLng(location.getLatitude(), location.getLongitude()));
+            updateCameraBearing(googleMap, location.getBearing());
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-//        Log.d(TAG, "onStop fired ..............");
-        mGoogleApiClient.disconnect();
-
         INTERVAL = 1000 * 40;
         FASTEST_INTERVAL = 1000 * 40;
-//        createLocationRequest();
-//        if (mGoogleApiClient != null && !mGoogleApiClient.isConnected())
-//            mGoogleApiClient.connect();
-//        if (mGoogleApiClient.isConnected()) {
-//            startLocationUpdates();
-//        }
-
-//        Log.d(TAG, "isConnected ...............: " + mGoogleApiClient.isConnected());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(receiver);
-        stopLocationUpdates();
+        activity.unregisterReceiver(receiver);
+        GoogleLocationHelper.getGoogleLocationHelper(activity).onDestroy(activity);
     }
-//    public static void main(String[] args) throws Exception {
-//        String s = "01:19 PM";
-//        Date time = null;
-//        SimpleDateFormat parseFormat = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-//        System.out.println(time = parseFormat.parse(s));
-//    }
-//    private String getDate(String OurDate)
-//    {
-//        OurDate=OurDate.substring(0,OurDate.lastIndexOf(":"));//+" "+tmp[tmp.length-1];
-//        try
-//        {
-//            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy hh:mm");
-//            Date value = formatter.parse(OurDate);
-//
-//            SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy HH:mm");
-//            dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));//this format changeable
-////            dateFormatter.setTimeZone(TimeZone.getDefault());
-//            OurDate = dateFormatter.format(value);
-//
-//            //Log.d("OurDate", OurDate);
-//        }
-//        catch (Exception e)
-//        {
-//            OurDate = "00-00-0000 00:00:00 am";
-//            e.printStackTrace();
-//        }
-//        return OurDate;
-//    }
-//    public static String DateTime(String dtStart) {
-//        try {
-//            //----------------------
-////            String dateStr = "Jul 16, 2013 12:08:59 AM";
-//            Calendar cal = Calendar.getInstance();
-//            TimeZone tz = cal.getTimeZone();
-//            SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
-////            SimpleDateFormat dfOutput = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a");
-//            df.setTimeZone(tz);
-//            Date date = df.parse(dtStart);
-//            df.setTimeZone(tz.getDefault());
-//            return df.format(date);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "00-00-0000 00:00";
-//        }
-//        //SimpleDateFormat dateformat = new SimpleDateFormat("MM-dd/yyyy hh:mm:ss a");
-//
-//    }
 
     private synchronized void insertMarkers(final ArrayList<UserDetail> list) {
 //        Log.e("insertMarkers", "" + list.size());
-
 
         try {
             if (googleMap != null)
@@ -717,12 +606,9 @@ public class HomeFragment extends BaseContainerFragment implements
                     LatLng tempLatLng = new LatLng(list.get(i).dLat, list.get(i).dLng);
                     final MarkerOptions options = new MarkerOptions().position(tempLatLng);
                     if (i == 0) {
-
-
                         //  if (!isGroupLocation)
                         {
                             final int finalI = i;
-
                             String imagePath = list.get(finalI).getUser_image();
                             if (imagePath != null && imagePath.length() > 0) {
 
@@ -730,7 +616,6 @@ public class HomeFragment extends BaseContainerFragment implements
                                     imagePath = imagePath.trim();
                                 else
                                     imagePath = Constants.imagBaseUrl + imagePath.trim();
-
                             }
 
 
@@ -751,21 +636,21 @@ public class HomeFragment extends BaseContainerFragment implements
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 } else {
 
-                                    Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                    Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                             R.drawable.no_image);
                                     smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
                                 }
                             } else {
-                                Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                         R.drawable.no_image);
                                 smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                 options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                             }
 
 
-                            View markerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
+                            View markerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
                             CircleImageView markerImageView = (CircleImageView) markerView.findViewById(R.id.imgUserImage);
                             markerImageView.setImageBitmap(smallMarker);
                             markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -780,13 +665,8 @@ public class HomeFragment extends BaseContainerFragment implements
                                 drawable.draw(canvas);
                             markerView.draw(canvas);
                             options.icon(BitmapDescriptorFactory.fromBitmap(returnedBitmap));
-
-
                         }
 //                        else {
-//
-//
-//
 //                            options.icon(BitmapDescriptorFactory
 //                                    .fromResource(R.drawable.select_map_pin));
 //                        }
@@ -807,7 +687,6 @@ public class HomeFragment extends BaseContainerFragment implements
 
                             }
 
-
                             final String finalImagePath = imagePath;
 
                             Log.i(TAG, "insertMarkers: finalImagePath=======" + finalImagePath);
@@ -819,30 +698,26 @@ public class HomeFragment extends BaseContainerFragment implements
                                     smallMarker = Bitmap.createScaledBitmap(bmp, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 } catch (FileNotFoundException e) {
-                                    Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                    Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                             R.drawable.no_image);
                                     smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 }
-
-
                             } else {
-                                Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                         R.drawable.no_image);
                                 smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                 options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                             }
-                            View markerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
+                            View markerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
                             CircleImageView markerImageView = (CircleImageView) markerView.findViewById(R.id.imgUserImage);
                             ImageView imgBg = (ImageView) markerView.findViewById(R.id.imgBg);
-
 
                             if (list.get(i).group_is_friend) {
                                 imgBg.setImageResource(R.drawable.tmp_pin_grey);
                                 options.icon(BitmapDescriptorFactory
                                         .fromResource(R.drawable.tmp_pin_grey));
                             } else {
-
                                 imgBg.setImageResource(R.drawable.tmp_pin_green);
                                 options.icon(BitmapDescriptorFactory
                                         .fromResource(R.drawable.tmp_pin_green));
@@ -861,8 +736,6 @@ public class HomeFragment extends BaseContainerFragment implements
                                 drawable.draw(canvas);
                             markerView.draw(canvas);
                             options.icon(BitmapDescriptorFactory.fromBitmap(returnedBitmap));
-
-
                         } else {
 
                             final int finalI = i;
@@ -875,9 +748,7 @@ public class HomeFragment extends BaseContainerFragment implements
                                 else {
                                     imagePath = Constants.imagBaseUrl + imagePath.trim();
                                 }
-
                             }
-
 
                             final String finalImagePath = imagePath;
 
@@ -889,20 +760,20 @@ public class HomeFragment extends BaseContainerFragment implements
                                     smallMarker = Bitmap.createScaledBitmap(bmp, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 } catch (FileNotFoundException e) {
-                                    Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                    Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                             R.drawable.no_image);
                                     smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 }
                             } else {
-                                Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
+                                Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                         R.drawable.no_image);
                                 smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                 options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                             }
 
 
-                            View markerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
+                            View markerView = ((LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
                             CircleImageView markerImageView = (CircleImageView) markerView.findViewById(R.id.imgUserImage);
                             markerImageView.setImageBitmap(smallMarker);
                             markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -940,7 +811,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     Marker marker = googleMap.addMarker(options);
 
 
-                    if (list.get(i).user_id.equalsIgnoreCase(CommonClass.getUserpreference(getActivity()).user_id)) {
+                    if (list.get(i).user_id.equalsIgnoreCase(CommonClass.getUserpreference(activity).user_id)) {
                         markerLoginUser = marker;
 
                     }
@@ -960,38 +831,8 @@ public class HomeFragment extends BaseContainerFragment implements
             }
             stopProgress();
             if (showCurrLoc) {
-
-
                 zoomMap();
-
-//                WindowManager wm = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-//                Display display = wm.getDefaultDisplay();
-//                DisplayMetrics metrics = new DisplayMetrics();
-//                display.getMetrics(metrics);
-//                int width = metrics.widthPixels;
-//                int height = metrics.heightPixels;
-//
-//                final LatLngBounds bounds = builder.build();
-//                CameraUpdate yourLocation = CameraUpdateFactory.newLatLngBounds(bounds, width / 3, height / 3, 35);
-//
-//
-//                CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
-//                        .target(new LatLng(list.get(0).dLat, list.get(0).dLng));
-//
-//
-//                cameraBuilder.zoom(13);
-//
-//
-//                CameraPosition cameraPosition = cameraBuilder.build();
-//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
-//                final CameraPosition cameraPosition = new CameraPosition.Builder()
-//                        .target(new LatLng(list.get(0).dLat, list.get(0).dLng)).build();
-//                LatLngBounds bounds = builder.build();
-//                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 35));
             }
-
 
             googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                 @Override
@@ -1003,35 +844,25 @@ public class HomeFragment extends BaseContainerFragment implements
 //                    Log.e("userDetail.","-----"+userDetail.group_is_friend);
                         if (userDetail.group_is_friend)
                             openChatActivity(userDetail);
-                    } else
+                    } else {
                         openChatActivity(userDetail);
-
+                    }
                 }
             });
 
             googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-
-                    // Toast.makeText(getActivity(), "" + marker.getSnippet(), Toast.LENGTH_SHORT).show();
-
-
-                    if (marker.getTitle().equalsIgnoreCase("Start point") || marker.getTitle().equalsIgnoreCase("End point")) {
-
-
+                    if (marker.getTitle().equalsIgnoreCase("Start point")
+                            || marker.getTitle().equalsIgnoreCase("End point")) {
                         int index = -1;
                         try {
                             index = Integer.parseInt(marker.getSnippet());
                         } catch (NumberFormatException e) {
-
                         }
-                        if (index != -1) {
-
-
+                        if (index != -1 && mRideList.size() > index) {
                             showDetailPopupMenu(mRideList.get(index), index);
-
                         }
-
                         return true;
                     } else
                         return false;
@@ -1088,8 +919,8 @@ public class HomeFragment extends BaseContainerFragment implements
 
     private void openChatActivity(UserDetail userDetail) {
 //        Log.e("if------","-----"+list.get(pos));
-        if (!CommonClass.getUserpreference(mActivity).user_id.equalsIgnoreCase(userDetail.user_id) && userDetail != null) {
-            Intent i = new Intent(mActivity, ChatActivity.class);
+        if (!CommonClass.getUserpreference(activity).user_id.equalsIgnoreCase(userDetail.user_id) && userDetail != null) {
+            Intent i = new Intent(activity, ChatActivity.class);
             Bundle data = new Bundle();
 //                    Log.e("HOME---", "profileimage----" + userDetail.user_image);
 //                    String strName= CommonClass.strEncodeDecode(userDetail.first_name,true);
@@ -1098,7 +929,7 @@ public class HomeFragment extends BaseContainerFragment implements
             data.putString("profileimage", userDetail.user_image);
             data.putString("type", "1");
             i.putExtras(data);
-            mActivity.startActivity(i);
+            activity.startActivity(i);
         }
     }
 
@@ -1118,70 +949,12 @@ public class HomeFragment extends BaseContainerFragment implements
     }
 
     private boolean isGooglePlayServicesAvailable() {
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
         if (ConnectionResult.SUCCESS == status) {
             return true;
         } else {
-            GooglePlayServicesUtil.getErrorDialog(status, mActivity, 0).show();
+            GooglePlayServicesUtil.getErrorDialog(status, activity, 0).show();
             return false;
-        }
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-//        Log.d(TAG, "onConnected - isConnected ...............: " + mGoogleApiClient.isConnected());
-        startLocationUpdates();
-    }
-
-    protected void startLocationUpdates() {
-        try {
-            PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, this);
-//        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(
-//                mGoogleApiClient);
-//        LocationServices.FusedLocationApi.requestLocationUpdates()
-
-//            Log.d(TAG, "Location update started ..............: ");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-//        Log.d(TAG, "Connection failed: " + connectionResult.toString());
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "Firing onLocationChanged..............................................");
-//        if (mCurrentLocation == null )
-        mCurrentLocation = location;
-
-//        int distance = (int) mCurrentLocation.distanceTo(location);
-//        Log.e("Distance", "--Distance---------" + distance);
-//        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-//        if(distance>=500) {
-        updateMarker(new LatLng(location.getLatitude(), location.getLongitude()));
-//            mCurrentLocation=null;
-
-        updateCameraBearing(googleMap, location.getBearing());
-    }
-
-    protected void stopLocationUpdates() {
-        try {
-            if (mGoogleApiClient != null)
-                LocationServices.FusedLocationApi.removeLocationUpdates(
-                        mGoogleApiClient, this);
-//            Log.d(TAG, "Location update stopped .......................");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -1200,8 +973,8 @@ public class HomeFragment extends BaseContainerFragment implements
                 JSONObject jresObject = jresObjectMain.getJSONObject("data");
                 if (jresObject != null) {
                     latLngList.clear();
-                    latLngList.add(new LatLng(latLng.latitude, latLng.longitude));
-                    System.out.println(" MY LAT LONG  " + currentLat + "  ,  " + currentLng);
+                    latLngList.add(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                            , GoogleLocationHelper.getLocationDirect().getLongitude()));
                     String lat, lng, user_id, first_name, last_name, user_image;
                     boolean isFriend;
                     arrayList = new ArrayList<>();
@@ -1210,9 +983,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
                     user_id = jresObject.getString("user_id");
 
-                    if (user_id.equalsIgnoreCase(CommonClass.getUserpreference(getActivity()).user_id)) {
-
-
+                    if (user_id.equalsIgnoreCase(CommonClass.getUserpreference(activity).user_id)) {
                         try {
                             dLat = Double.parseDouble(CommonClass.getDataFromJson(jresObject, "latitude"));
                             dLng = Double.parseDouble(CommonClass.getDataFromJson(jresObject, "longitude"));
@@ -1225,12 +996,11 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         if (dLat == 0.0 || dLng == 0.0) {
                             Log.i(TAG, "parseResponse: inside if");
-                            dLat = currentLat;//CommonClass.getDataFromJsonDouble(jresObject,"latitude");
-                            dLng = currentLng;//CommonClass.getDataFromJsonDouble(jresObject,"longitude");
-                        } else
+                            dLat = GoogleLocationHelper.getLocationDirect().getLatitude();//CommonClass.getDataFromJsonDouble(jresObject,"latitude");
+                            dLng = GoogleLocationHelper.getLocationDirect().getLongitude();//CommonClass.getDataFromJsonDouble(jresObject,"longitude");
+                        } else {
                             Log.i(TAG, "parseResponse: inside else dLat=" + dLat + " dLng=" + dLng);
-
-
+                        }
                     } else {
                         dLat = CommonClass.getDataFromJsonDouble(jresObject, "latitude");
                         dLng = CommonClass.getDataFromJsonDouble(jresObject, "longitude");
@@ -1238,7 +1008,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     LatLng latLng = new LatLng(dLat, dLng);
                     first_name = jresObject.getString("first_name");
                     last_name = jresObject.getString("last_name");
-                    user_image = CommonClass.getUserpreference(getActivity()).user_image;
+                    user_image = CommonClass.getUserpreference(activity).user_image;
                     if (jresObject.has("update_location"))
                         update_location = jresObject.getString("update_location");
                     else
@@ -1308,7 +1078,6 @@ public class HomeFragment extends BaseContainerFragment implements
                 }
             }
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
 //            message = getResources().getString(R.string.s_wrong);
             e.printStackTrace();
         } catch (Exception e) {
@@ -1321,52 +1090,51 @@ public class HomeFragment extends BaseContainerFragment implements
 
     //---------- Home Fragment
     private synchronized void updateHomeFragment() {
-        if (!String.valueOf(latLng.latitude).equalsIgnoreCase("0.0") || !String.valueOf(latLng.longitude).equalsIgnoreCase("0.0")) {
 
-            ConnectionDetector cd = new ConnectionDetector(mActivity);
-            boolean isConnected = cd.isConnectingToInternet();
-            if (isConnected) {
-                try {
-                    VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.POST, Constants.shareLocationUrl, homeSuccessLisner(),
-                            homeErrorLisner()) {
-                        @Override
-                        protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
-                            HashMap<String, String> requestparam = new HashMap<>();
-                            requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
-                            requestparam.put("latitude", String.valueOf(latLng.latitude));
-                            requestparam.put("longitude", String.valueOf(latLng.longitude));
-                            requestparam.put("timezone", "" + TimeZone.getDefault().getID());
+        final Location l = GoogleLocationHelper.getLocationDirect();
+
+        if (l == null) {
+            CommonClass.ShowToast(activity, activity.getResources().getString(R.string.location_not_found));
+            return;
+        }
+
+        ConnectionDetector cd = new ConnectionDetector(activity);
+        boolean isConnected = cd.isConnectingToInternet();
+        if (isConnected) {
+            try {
+                VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.POST, Constants.shareLocationUrl, homeSuccessLisner(),
+                        homeErrorLisner()) {
+                    @Override
+                    protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
+                        HashMap<String, String> requestparam = new HashMap<>();
+                        requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
+                        requestparam.put("latitude", String.valueOf(l.getLatitude()));
+                        requestparam.put("longitude", String.valueOf(l.getLongitude()));
+                        requestparam.put("timezone", "" + TimeZone.getDefault().getID());
 //                    String formattedDate = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss a").format(Calendar.getInstance().getTime());
 //                    requestparam.put("datetime", formattedDate);
 
 //                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 //                    String currentDateandTime = sdf.format(new Date());
 
-                            Log.e("HomeFragment Request", "==> " + requestparam);
-                            return requestparam;
-                        }
-                    };
+                        Log.e("HomeFragment Request", "==> " + requestparam);
+                        return requestparam;
+                    }
+                };
 //            CommonClass.showLoading(LoginActivity.this);
-                    mQueue.add(apiRequest);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-
-                CommonClass.ShowToast(mActivity, mActivity.getResources().getString(R.string.check_internet));
-
-
+                mQueue.add(apiRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        } else {
+            CommonClass.ShowToast(activity, activity.getResources().getString(R.string.check_internet));
         }
     }
 
     private com.android.volley.Response.Listener<String> homeSuccessLisner() {
         return new com.android.volley.Response.Listener<String>() {
-            private String responseMessage = "";
-
             @Override
             public void onResponse(String response) {
-                // TODO Auto-generated method stub
                 parseResponse(response);
             }
         };
@@ -1385,42 +1153,44 @@ public class HomeFragment extends BaseContainerFragment implements
 
     //---------- Group Location
     private synchronized void updateGroupLocation() {
-//        System.out.println(" CALLING SERVICE");
 
-        if (!String.valueOf(latLng.latitude).equalsIgnoreCase("0.0") || !String.valueOf(latLng.longitude).equalsIgnoreCase("0.0")) {
+        final Location l = GoogleLocationHelper.getLocationDirect();
+        if (l == null) {
+            CommonClass.ShowToast(activity, activity.getResources().getString(R.string.location_not_found));
+            return;
+        }
 
-            ConnectionDetector cd = new ConnectionDetector(mActivity);
-            boolean isConnected = cd.isConnectingToInternet();
-            if (isConnected) {
-                try {
-                    VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.POST, Constants.groupLocationUpdate, homeSuccessLisner(),
-                            homeErrorLisner()) {
-                        @Override
-                        protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
-                            HashMap<String, String> requestparam = new HashMap<>();
-                            requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
-                            requestparam.put("latitude", String.valueOf(latLng.latitude));
-                            requestparam.put("longitude", String.valueOf(latLng.longitude));
-                            requestparam.put("group_id", groupId);
-                            requestparam.put("timezone", "" + TimeZone.getDefault().getID());
-                            //                    String formattedDate = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss a").format(Calendar.getInstance().getTime());
-                            //                    requestparam.put("datetime", formattedDate);
-                            //                    System.out.println("URL---------------------------" + Constants.groupLocationUpdate);
-                            Log.e("GroupLocation Request", "GroupLocation Request==> " + requestparam);
-                            return requestparam;
-                        }
-                    };
-                    //            CommonClass.showLoading(LoginActivity.this);
-                    mQueue.add(apiRequest);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-
-                CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
-
-
+        ConnectionDetector cd = new ConnectionDetector(activity);
+        boolean isConnected = cd.isConnectingToInternet();
+        if (isConnected) {
+            try {
+                VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.POST, Constants.groupLocationUpdate, homeSuccessLisner(),
+                        homeErrorLisner()) {
+                    @Override
+                    protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
+                        HashMap<String, String> requestparam = new HashMap<>();
+                        requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
+                        requestparam.put("latitude", String.valueOf(l.getLatitude()));
+                        requestparam.put("longitude", String.valueOf(l.getLongitude()));
+                        requestparam.put("group_id", groupId);
+                        requestparam.put("timezone", "" + TimeZone.getDefault().getID());
+                        //                    String formattedDate = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss a").format(Calendar.getInstance().getTime());
+                        //                    requestparam.put("datetime", formattedDate);
+                        //                    System.out.println("URL---------------------------" + Constants.groupLocationUpdate);
+                        Log.e("GroupLocation Request", "GroupLocation Request==> " + requestparam);
+                        return requestparam;
+                    }
+                };
+                //            CommonClass.showLoading(LoginActivity.this);
+                mQueue.add(apiRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        } else {
+
+            CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
+
+
         }
     }
 
@@ -1429,34 +1199,36 @@ public class HomeFragment extends BaseContainerFragment implements
 
         if (v == imgPlayPause) {
 
-            //Toast.makeText(mActivity, "Click", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(activity, "Click", Toast.LENGTH_SHORT).show();
             if (imgPlayPause.getDrawable().getConstantState().equals
                     (getResources().getDrawable(R.drawable.btn_record).getConstantState())) {
 
                 imgPlayPause.setEnabled(false);
                 imgPlayPause.setClickable(false);
                 db.deleteAllData();
-                CommonClass.clearPauseInterval(getActivity());
-                CommonClass.clearPauseTime(getActivity());
-                CommonClass.clearDuration(getActivity());
-                CommonClass.clearPauseDistance(getActivity());
-                CommonClass.clearPauseDistanceInterval(getActivity());
-                CommonClass.clearStartTime(getActivity());
-                CommonClass.clearStopTime(getActivity());
-                CommonClass.clearPastDistance(getActivity());
-                CommonClass.setlocationServicepreference(getActivity(), "true");
-                CommonClass.setlocationServiceCurrentState(getActivity(), R.drawable.btn_pause);
+
+                CommonClass.clearPauseInterval(activity);
+                CommonClass.clearPauseTime(activity);
+                CommonClass.clearDuration(activity);
+                CommonClass.clearPauseDistance(activity);
+                CommonClass.clearPauseDistanceInterval(activity);
+                CommonClass.clearStartTime(activity);
+                CommonClass.clearStopTime(activity);
+                CommonClass.clearPastDistance(activity);
+                CommonClass.setLocationServiceStartStopPreference(activity, "true");
+                CommonClass.setLocationServiceCurrentState(activity, R.drawable.btn_pause);
                 long timeStart = SystemClock.elapsedRealtime();
-                CommonClass.setStartTime(getActivity(), timeStart);
-                getActivity().startService(new Intent(getActivity(), LocationService.class));
+                CommonClass.setStartTime(activity, timeStart);
+
+                activity.startService(new Intent(activity, LocationService.class));
                 imgPlayPause.setImageResource(R.drawable.btn_pause);
 
             } else if (imgPlayPause.getDrawable().getConstantState().equals
                     (getResources().getDrawable(R.drawable.btn_pause).getConstantState())) {
-                CommonClass.setlocationServicepreference(
-                        getActivity(), "false");
-                //  getActivity().stopService(new Intent(getActivity(), LocationService.class));
-                CommonClass.setlocationServiceCurrentState(getActivity(), R.drawable.btn_resume);
+                CommonClass.setLocationServiceStartStopPreference(
+                        activity, "false");
+                //  activity.stopService(new Intent(activity, LocationService.class));
+                CommonClass.setLocationServiceCurrentState(activity, R.drawable.btn_resume);
                 imgPlayPause.setImageResource(R.drawable.btn_resume);
                 imgFinish.setVisibility(VISIBLE);
 
@@ -1469,39 +1241,39 @@ public class HomeFragment extends BaseContainerFragment implements
                 }
 
                 Log.i(TAG, "kp onClick: pause ==>  " + last_time);
-                CommonClass.setDuration(getActivity(), last_time);
+                CommonClass.setDuration(activity, last_time);
 
 
                 long time = SystemClock.elapsedRealtime();
-                CommonClass.setStartPauseInterval(getActivity(), time);
+                CommonClass.setStartPauseInterval(activity, time);
 
                 double dis = 0;
                 if (distance.trim().length() > 0)
                     dis = Double.parseDouble(distance);
 
-                CommonClass.setStartPauseDistance(getActivity(), dis);
-                //CommonClass.clearPauseInterval(getActivity());
+                CommonClass.setStartPauseDistance(activity, dis);
+                //CommonClass.clearPauseInterval(activity);
 
 
             } else if (imgPlayPause.getDrawable().getConstantState().equals
                     (getResources().getDrawable(R.drawable.btn_resume).getConstantState())) {
                 long timestop = SystemClock.elapsedRealtime();
-                CommonClass.setStopPauseInterval(getActivity(), timestop);
+                CommonClass.setStopPauseInterval(activity, timestop);
                 String distance = db.getDistance();
                 double dis = 0;
                 if (distance.trim().length() > 0)
                     dis = Double.parseDouble(distance);
 
-                CommonClass.setStopPauseDistance(getActivity(), dis);
-                CommonClass.setlocationServicepreference(getActivity(), "true");
-                // getActivity().startService(new Intent(getActivity(), LocationService.class));
+                CommonClass.setStopPauseDistance(activity, dis);
+                CommonClass.setLocationServiceStartStopPreference(activity, "true");
+                // activity.startService(new Intent(activity, LocationService.class));
                 imgPlayPause.setImageResource(R.drawable.btn_pause);
-                CommonClass.setlocationServiceCurrentState(getActivity(), R.drawable.btn_pause);
+                CommonClass.setLocationServiceCurrentState(activity, R.drawable.btn_pause);
                 imgFinish.setVisibility(View.GONE);
-                long timeNow = CommonClass.getStopPauseInterval(getActivity()) - CommonClass.getStartPauseInterval(getActivity());
-                CommonClass.setPauseTime(getActivity(), timeNow);
-                double disPause = CommonClass.getStopPauseDistance(getActivity()) - CommonClass.getStartPauseDistance(getActivity());
-                CommonClass.setPauseDistance(getActivity(), (float) disPause);
+                long timeNow = CommonClass.getStopPauseInterval(activity) - CommonClass.getStartPauseInterval(activity);
+                CommonClass.setPauseTime(activity, timeNow);
+                double disPause = CommonClass.getStopPauseDistance(activity) - CommonClass.getStartPauseDistance(activity);
+                CommonClass.setPauseDistance(activity, (float) disPause);
 
 
             }
@@ -1516,10 +1288,10 @@ public class HomeFragment extends BaseContainerFragment implements
                 long timestop = SystemClock.elapsedRealtime();
 
 
-                CommonClass.setStopPauseInterval(getActivity(), timestop);
+                CommonClass.setStopPauseInterval(activity, timestop);
 
-                long timeNow = CommonClass.getStopPauseInterval(getActivity()) - CommonClass.getStartPauseInterval(getActivity());
-                CommonClass.setPauseTime(getActivity(), timeNow);
+                long timeNow = CommonClass.getStopPauseInterval(activity) - CommonClass.getStartPauseInterval(activity);
+                CommonClass.setPauseTime(activity, timeNow);
 
 
                 String distance = db.getDistance();
@@ -1527,27 +1299,25 @@ public class HomeFragment extends BaseContainerFragment implements
                 if (distance.trim().length() > 0)
                     dis = Double.parseDouble(distance);
 
-                CommonClass.setStopPauseDistance(getActivity(), dis);
+                CommonClass.setStopPauseDistance(activity, dis);
 
-                double disPause = CommonClass.getStopPauseDistance(getActivity()) - CommonClass.getStartPauseDistance(getActivity());
+                double disPause = CommonClass.getStopPauseDistance(activity) - CommonClass.getStartPauseDistance(activity);
 
 
-                CommonClass.setPauseDistance(getActivity(), (float) disPause);
+                CommonClass.setPauseDistance(activity, (float) disPause);
 
-                getActivity().stopService(new Intent(getActivity(), LocationService.class));
+                activity.stopService(new Intent(activity, LocationService.class));
             }
 
 
-            CommonClass.setlocationServicepreference(
-                    getActivity(), "false");
+            CommonClass.setLocationServiceStartStopPreference(activity, "false");
 
             long timeStop = SystemClock.elapsedRealtime();
-            CommonClass.setStopTime(getActivity(), timeStop);
+            CommonClass.setStopTime(activity, timeStop);
 
-
-            getActivity().stopService(new Intent(getActivity(), LocationService.class));
+            activity.stopService(new Intent(activity, LocationService.class));
             imgPlayPause.setImageResource(R.drawable.btn_record);
-            CommonClass.setlocationServiceCurrentState(getActivity(), R.drawable.btn_record);
+            CommonClass.setLocationServiceCurrentState(activity, R.drawable.btn_record);
             imgFinish.setVisibility(View.GONE);
 
             String avg_speed, distance, duration, top_speed;
@@ -1585,10 +1355,10 @@ public class HomeFragment extends BaseContainerFragment implements
             }
 
 
-            time = time - CommonClass.getPauseTime(getActivity());
+            time = time - CommonClass.getPauseTime(activity);
 
 
-            time = CommonClass.getStopTime(getActivity()) - CommonClass.getStartTime(getActivity()) - CommonClass.getPauseTime(getActivity());
+            time = CommonClass.getStopTime(activity) - CommonClass.getStartTime(activity) - CommonClass.getPauseTime(activity);
 
             Log.i(TAG, "lll Duration onClick: finalTime==>  " + getDurationBreakdown(time));
 
@@ -1597,9 +1367,9 @@ public class HomeFragment extends BaseContainerFragment implements
             float average = (float) ((fDistance * 1000 / (time / 1000)) * 3.6);
 
 
-            fDistance = fDistance - CommonClass.getPauseDistance(getActivity());
+            fDistance = fDistance - CommonClass.getPauseDistance(activity);
 
-            fDistance = fDistance + CommonClass.getPastDistance(getActivity());
+            fDistance = fDistance + CommonClass.getPastDistance(activity);
 
 
             favg_speed = (float) ((float) ((fDistance * 1000 / (time / 1000))) * 3.6);
@@ -1612,8 +1382,8 @@ public class HomeFragment extends BaseContainerFragment implements
             distance = String.format("%.2f", fDistance);
 
 
-            CommonClass.clearPauseInterval(getActivity());
-            CommonClass.clearPauseDistanceInterval(getActivity());
+            CommonClass.clearPauseInterval(activity);
+            CommonClass.clearPauseDistanceInterval(activity);
             showPopupMenu(String.format("%.2f", favg_speed), distance, duration, top_speed);
 
         }
@@ -1622,9 +1392,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
     public static String getDurationBreakdown(long millis) {
 
-
         if (millis < 0) {
-
             return "1 sec";
         }
 
@@ -1674,7 +1442,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
         isShareClick = false;
 
-        dialogShare = new android.app.Dialog(getActivity(), R.style.AppCompatAlertDialogStyleTrans);
+        dialogShare = new android.app.Dialog(activity, R.style.AppCompatAlertDialogStyleTrans);
         dialogShare.requestWindowFeature(Window.FEATURE_NO_TITLE);
         // dialog.setCancelable(false);
         dialogShare.getWindow().getAttributes().windowAnimations = R.style.stockAnimation;
@@ -1763,8 +1531,8 @@ public class HomeFragment extends BaseContainerFragment implements
                 boolean isValid = checkValidation(edtRideName.getText().toString(), ride_type, ride_difficulty);
 
 
-                CommonClass.closeKeyboard(mActivity);
-                ConnectionDetector cd = new ConnectionDetector(getActivity());
+                CommonClass.closeKeyboard(activity);
+                ConnectionDetector cd = new ConnectionDetector(activity);
                 boolean isConnected = cd.isConnectingToInternet();
                 if (isConnected) {
 
@@ -1779,7 +1547,7 @@ public class HomeFragment extends BaseContainerFragment implements
                             protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
                                 HashMap<String, String> requestparam = new HashMap<>();
 
-                                requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
+                                requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
                                 requestparam.put("ride_name", "" + edtRideName.getText().toString());
 
                                 requestparam.put("ride_type", "" + ride_type);
@@ -1801,7 +1569,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     }
                 } else {
 
-                    CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
+                    CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
 
                 }
 
@@ -1813,22 +1581,22 @@ public class HomeFragment extends BaseContainerFragment implements
             public void onClick(View v) {
 
 
-                new AlertDialog.Builder(getActivity())
+                new AlertDialog.Builder(activity)
                         .setMessage("Do you want to discard this ride?")
                         .setCancelable(true)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface mDialog, int id) {
                                 db.deleteAllData();
-                                CommonClass.clearPauseInterval(getActivity());
+                                CommonClass.clearPauseInterval(activity);
 
-                                CommonClass.clearPauseTime(getActivity());
-                                CommonClass.clearDuration(getActivity());
-                                CommonClass.clearPauseDistance(getActivity());
-                                CommonClass.clearPauseDistanceInterval(getActivity());
+                                CommonClass.clearPauseTime(activity);
+                                CommonClass.clearDuration(activity);
+                                CommonClass.clearPauseDistance(activity);
+                                CommonClass.clearPauseDistanceInterval(activity);
 
-                                CommonClass.clearStartTime(getActivity());
-                                CommonClass.clearStopTime(getActivity());
-                                CommonClass.clearPastDistance(getActivity());
+                                CommonClass.clearStartTime(activity);
+                                CommonClass.clearStopTime(activity);
+                                CommonClass.clearPastDistance(activity);
                                 dialogShare.dismiss();
 
                             }
@@ -1900,8 +1668,8 @@ public class HomeFragment extends BaseContainerFragment implements
                 boolean isValid = checkValidation(edtRideName.getText().toString(), ride_type, ride_difficulty);
 
 
-                CommonClass.closeKeyboard(mActivity);
-                ConnectionDetector cd = new ConnectionDetector(getActivity());
+                CommonClass.closeKeyboard(activity);
+                ConnectionDetector cd = new ConnectionDetector(activity);
                 boolean isConnected = cd.isConnectingToInternet();
                 if (isConnected) {
 
@@ -1916,7 +1684,7 @@ public class HomeFragment extends BaseContainerFragment implements
                                 HashMap<String, String> requestparam = new HashMap<>();
 
 
-                                requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
+                                requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
                                 requestparam.put("ride_name", "" + edtRideName.getText().toString());
                                 requestparam.put("ride_type", "" + ride_type);
                                 requestparam.put("ride_difficulty", "" + ride_difficulty);
@@ -1937,7 +1705,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     }
                 } else {
 
-                    CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
+                    CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
 
                 }
             }
@@ -1951,7 +1719,7 @@ public class HomeFragment extends BaseContainerFragment implements
         // inflate menu
 
 
-        dialogShare = new android.app.Dialog(getActivity(), R.style.AppCompatAlertDialogStyleTrans);
+        dialogShare = new android.app.Dialog(activity, R.style.AppCompatAlertDialogStyleTrans);
         dialogShare.requestWindowFeature(Window.FEATURE_NO_TITLE);
         // dialog.setCancelable(false);
         dialogShare.getWindow().getAttributes().windowAnimations = R.style.stockAnimation;
@@ -2019,10 +1787,10 @@ public class HomeFragment extends BaseContainerFragment implements
                     }
 
                 } else
-                    Toast.makeText(getActivity(), "Please finish current ride to start new ride.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, "Please finish current ride to start new ride.", Toast.LENGTH_SHORT).show();
 
 
-                // Toast.makeText(getActivity(), "Under Development !", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(activity, "Under Development !", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -2032,13 +1800,13 @@ public class HomeFragment extends BaseContainerFragment implements
                 //  dialog.dismiss();
 
 
-                if (mRide.user_id.equalsIgnoreCase(CommonClass.getUserpreference(getActivity()).user_id) && mRide.status.equalsIgnoreCase("0")) {
+                if (mRide.user_id.equalsIgnoreCase(CommonClass.getUserpreference(activity).user_id) && mRide.status.equalsIgnoreCase("0")) {
 
 
                     Log.i(TAG, "onClick: inside api call ");
 
-                    CommonClass.closeKeyboard(mActivity);
-                    ConnectionDetector cd = new ConnectionDetector(getActivity());
+                    CommonClass.closeKeyboard(activity);
+                    ConnectionDetector cd = new ConnectionDetector(activity);
                     boolean isConnected = cd.isConnectingToInternet();
                     if (isConnected) {
 
@@ -2054,7 +1822,7 @@ public class HomeFragment extends BaseContainerFragment implements
                             protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
                                 HashMap<String, String> requestparam = new HashMap<>();
 
-                                requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
+                                requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
                                 requestparam.put("ride_id", "" + mRide.id);
 
 
@@ -2069,7 +1837,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
                     } else {
 
-                        CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
+                        CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
 
                     }
                 } else {
@@ -2078,7 +1846,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     if (dialogShare != null)
                         dialogShare.dismiss();
 
-                    String ex_rides = CommonClass.getRideIds(getActivity());
+                    String ex_rides = CommonClass.getRideIds(activity);
 
 
                     String rides[] = ex_rides.split(",");
@@ -2102,14 +1870,14 @@ public class HomeFragment extends BaseContainerFragment implements
                             ride_data = ride_data.substring(0, ride_data.length() - 1);
 
 
-                        CommonClass.setRideIds(getActivity(), ride_data);
+                        CommonClass.setRideIds(activity, ride_data);
 
                         Log.i(TAG, "onCreateView: Total Rides 2 = " + ride_data);
 
                     }
 
 
-                    ((NavigationDrawerActivity) getActivity()).displayView(2);
+                    ((NavigationDrawerActivity) activity).displayView(2);
                 }
 
 
@@ -2154,7 +1922,7 @@ public class HomeFragment extends BaseContainerFragment implements
         super.onActivityResult(requestCode, resultCode, data);
 
 
-        if (requestCode == SHARE_CODE && resultCode == getActivity().RESULT_OK
+        if (requestCode == SHARE_CODE && resultCode == activity.RESULT_OK
                 && null != data) {
 
 
@@ -2166,7 +1934,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
             if (packageName.equalsIgnoreCase("com.facebook.katana")) {
-                ShareDialog shareDialog = new ShareDialog(getActivity());
+                ShareDialog shareDialog = new ShareDialog(activity);
 
                 ShareLinkContent linkContent = new ShareLinkContent.Builder()
                         .setContentTitle("Cync Ride")
@@ -2240,16 +2008,16 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
                             db.deleteAllData();
-                            CommonClass.clearPauseInterval(getActivity());
+                            CommonClass.clearPauseInterval(activity);
 
-                            CommonClass.clearPauseTime(getActivity());
-                            CommonClass.clearDuration(getActivity());
-                            CommonClass.clearPauseDistance(getActivity());
-                            CommonClass.clearPauseDistanceInterval(getActivity());
+                            CommonClass.clearPauseTime(activity);
+                            CommonClass.clearDuration(activity);
+                            CommonClass.clearPauseDistance(activity);
+                            CommonClass.clearPauseDistanceInterval(activity);
 
-                            CommonClass.clearStartTime(getActivity());
-                            CommonClass.clearStopTime(getActivity());
-                            CommonClass.clearPastDistance(getActivity());
+                            CommonClass.clearStartTime(activity);
+                            CommonClass.clearStopTime(activity);
+                            CommonClass.clearPastDistance(activity);
 
                             String id, user_id, ride_name, ride_type, ride_difficulty, distance, duration, top_speed, avg_speed, date_added,
                                     share_ride, status;
@@ -2288,7 +2056,7 @@ public class HomeFragment extends BaseContainerFragment implements
 //                            }
 //
 //
-//                            if (CommonClass.getUserpreference(getActivity()).view_my_rides) {
+//                            if (CommonClass.getUserpreference(activity).view_my_rides) {
 //                                mRideIdList.clear();
 //                                mRideList.clear();
 //                                getMyRide();
@@ -2312,10 +2080,10 @@ public class HomeFragment extends BaseContainerFragment implements
 
                                 startActivity(Intent.createChooser(share, "Share ride!"));
 
-                                ((NavigationDrawerActivity) getActivity()).displayView(2);
+                                ((NavigationDrawerActivity) activity).displayView(2);
 
                             } else {
-                                ((NavigationDrawerActivity) getActivity()).displayView(2);
+                                ((NavigationDrawerActivity) activity).displayView(2);
                             }
 
 
@@ -2325,7 +2093,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     } else {
 
 
-                        CommonClass.ShowToast(mActivity, message);
+                        CommonClass.ShowToast(activity, message);
 
 
                     }
@@ -2336,7 +2104,7 @@ public class HomeFragment extends BaseContainerFragment implements
                         message = getResources().getString(R.string.s_wrong);
 
                     e.printStackTrace();
-                    CommonClass.ShowToast(mActivity, message);
+                    CommonClass.ShowToast(activity, message);
 
 
                 }
@@ -2370,39 +2138,29 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
                     if (Status) {
-
-
                         String share_ride_url = "";
 
                         if (dialogShare != null)
                             dialogShare.dismiss();
 
-
-                        String ex_rides = CommonClass.getRideIds(getActivity());
-
+                        String ex_rides = CommonClass.getRideIds(activity);
                         Log.i(TAG, "onCreateView: Total Rides 1  = " + ex_rides);
 
-
                         String rides[] = ex_rides.split(",");
-                        List<String> stringList = new ArrayList<String>(Arrays.asList(rides));
+                        List<String> stringList = new ArrayList<>(Arrays.asList(rides));
                         int dIndex = stringList.indexOf(mRideList.get(deletedIndex).id);
                         if (dIndex != -1) {
-
-
                             stringList.remove(dIndex);
 
                             String ride_data = "";
                             for (int i = 0; i < stringList.size(); i++) {
-
                                 ride_data = ride_data + stringList.get(i) + ",";
-
                             }
 
                             if (ride_data.length() > 0)
                                 ride_data = ride_data.substring(0, ride_data.length() - 1);
 
-
-                            CommonClass.setRideIds(getActivity(), ride_data);
+                            CommonClass.setRideIds(activity, ride_data);
 
                             Log.i(TAG, "onCreateView: Total Rides 2 = " + ride_data);
 
@@ -2410,30 +2168,17 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         mRideList.remove(deletedIndex);
                         mRideIdList.remove(deletedIndex);
-
                     } else {
-
-
-                        CommonClass.ShowToast(mActivity, message);
-
-
+                        CommonClass.ShowToast(activity, message);
                     }
-
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     if (message.trim().length() == 0)
                         message = getResources().getString(R.string.s_wrong);
 
                     e.printStackTrace();
-                    CommonClass.ShowToast(mActivity, message);
-
-
+                    CommonClass.ShowToast(activity, message);
                 }
-
-
             }
-
-
         };
     }
 
@@ -2443,8 +2188,8 @@ public class HomeFragment extends BaseContainerFragment implements
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                CommonClass.closeLoding(getActivity());
-                CommonClass.ShowToast(getActivity(), getString(R.string.s_wrong));
+                CommonClass.closeLoding(activity);
+                CommonClass.ShowToast(activity, getString(R.string.s_wrong));
             }
         };
     }
@@ -2452,7 +2197,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
     private void showProgress() {
 
-        showLoading(getActivity());
+        showLoading(activity);
 
     }
 
@@ -2495,20 +2240,20 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
     private void stopProgress() {
-        closeLoding(getActivity());
+        closeLoding(activity);
     }
 
     private boolean checkValidation(String ride_name, String ride_type, String ride_difficulty) {
 
 
         if (TextUtils.isEmpty(ride_name)) {
-            Toast.makeText(getActivity(), "Please enter ride name.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Please enter ride name.", Toast.LENGTH_SHORT).show();
             return false;
         } else if (ride_type.trim().length() == 0) {
-            Toast.makeText(getActivity(), "Please select ride type.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Please select ride type.", Toast.LENGTH_SHORT).show();
             return false;
         } else if (ride_difficulty.trim().length() == 0) {
-            Toast.makeText(getActivity(), "Please enter ride difficulty.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Please enter ride difficulty.", Toast.LENGTH_SHORT).show();
 
             return false;
         }
@@ -2546,10 +2291,12 @@ public class HomeFragment extends BaseContainerFragment implements
         public void onReceive(Context context, Intent intent) {
             if (!isGroupLocation) {
 
+                Log.i(TAG, "Broadcast Receiver: Home Fragmemnt from Location Services");
+
                 double lati = intent.getExtras().getDouble("latitude");
                 double longi = intent.getExtras().getDouble("longitude");
                 long time = intent.getExtras().getLong("duration");
-                time = time - CommonClass.getPauseTime(getActivity());
+                time = time - CommonClass.getPauseTime(activity);
 
                 if (time > 20000) {
                     imgPlayPause.setEnabled(true);
@@ -2672,7 +2419,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
             // zoomMap();
 
-            if ((CommonClass.getlocationServicepreference(getActivity())
+            if ((CommonClass.getLocationServicePreference(activity)
                     .equalsIgnoreCase("true"))) {
 
                 for (LatLng latLng : list) {
@@ -2703,8 +2450,8 @@ public class HomeFragment extends BaseContainerFragment implements
         int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
 
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
-        googleMap.moveCamera(cu);
-        googleMap.animateCamera(cu);
+//        googleMap.moveCamera(cu);
+//        googleMap.animateCamera(cu);
 
 //        z++;
 //
@@ -2717,8 +2464,8 @@ public class HomeFragment extends BaseContainerFragment implements
 
     public void getRideDetail() {
 
-        CommonClass.closeKeyboard(mActivity);
-        ConnectionDetector cd = new ConnectionDetector(getActivity());
+        CommonClass.closeKeyboard(activity);
+        ConnectionDetector cd = new ConnectionDetector(activity);
         boolean isConnected = cd.isConnectingToInternet();
         if (isConnected) {
 
@@ -2730,9 +2477,9 @@ public class HomeFragment extends BaseContainerFragment implements
                     HashMap<String, String> requestparam = new HashMap<>();
 
 
-                    requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
+                    requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
 
-                    requestparam.put("ride_id", "" + CommonClass.getRideIds(getActivity()));
+                    requestparam.put("ride_id", "" + CommonClass.getRideIds(activity));
 
 
                     return requestparam;
@@ -2746,7 +2493,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
         } else {
 
-            CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
+            CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
 
         }
     }
@@ -2832,7 +2579,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     } else {
 
 
-                        // CommonClass.ShowToast(mActivity, message);
+                        // CommonClass.ShowToast(activity, message);
 
 
                     }
@@ -2843,33 +2590,25 @@ public class HomeFragment extends BaseContainerFragment implements
                         message = getResources().getString(R.string.s_wrong);
 
                     e.printStackTrace();
-                    CommonClass.ShowToast(mActivity, message);
-
-
+                    CommonClass.ShowToast(activity, message);
                 }
 
-
-                if (CommonClass.getUserpreference(getActivity()).view_my_rides)
+                if (CommonClass.getUserpreference(activity).view_my_rides) {
                     getMyRide();
-                else
-                    updateMarker(new LatLng(currentLat, currentLng));
-
-
-                //updateMarker(new LatLng(currentLat, currentLng));
-
-
+                } else {
+                    updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                            , GoogleLocationHelper.getLocationDirect().getLongitude()));
+                }
             }
-
-
         };
     }
 
 
     public void getMyRide() {
 
-        if (mActivity != null) {
-            CommonClass.closeKeyboard(mActivity);
-            ConnectionDetector cd = new ConnectionDetector(mActivity);
+        if (activity != null) {
+            CommonClass.closeKeyboard(activity);
+            ConnectionDetector cd = new ConnectionDetector(activity);
             boolean isConnected = cd.isConnectingToInternet();
             if (isConnected) {
 
@@ -2881,7 +2620,7 @@ public class HomeFragment extends BaseContainerFragment implements
                         HashMap<String, String> requestparam = new HashMap<>();
 
 
-                        requestparam.put("user_id", CommonClass.getUserpreference(getActivity()).user_id);
+                        requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
                         // requestparam.put("user_id", "960");
 
                         // requestparam.put("ride_id", "" + ride_id);
@@ -2898,7 +2637,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
             } else {
 
-                CommonClass.ShowToast(getActivity(), getResources().getString(R.string.check_internet));
+                CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
 
             }
         }
@@ -2990,7 +2729,7 @@ public class HomeFragment extends BaseContainerFragment implements
                     } else {
 
 
-                        CommonClass.ShowToast(mActivity, message);
+                        CommonClass.ShowToast(activity, message);
 
 
                     }
@@ -3003,12 +2742,10 @@ public class HomeFragment extends BaseContainerFragment implements
                         message = getResources().getString(R.string.s_wrong);
 
                     e.printStackTrace();
-                    CommonClass.ShowToast(mActivity, message);
-
-
+                    CommonClass.ShowToast(activity, message);
                 }
-
-                updateMarker(new LatLng(currentLat, currentLng));
+                updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                        , GoogleLocationHelper.getLocationDirect().getLongitude()));
             }
 
 
@@ -3021,9 +2758,10 @@ public class HomeFragment extends BaseContainerFragment implements
             @Override
             public void onErrorResponse(VolleyError error) {
 
-                CommonClass.closeLoding(getActivity());
-                CommonClass.ShowToast(getActivity(), getString(R.string.s_wrong));
-                updateMarker(new LatLng(currentLat, currentLng));
+                CommonClass.closeLoding(activity);
+                CommonClass.ShowToast(activity, getString(R.string.s_wrong));
+                updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
+                        , GoogleLocationHelper.getLocationDirect().getLongitude()));
             }
         };
     }
@@ -3084,15 +2822,15 @@ public class HomeFragment extends BaseContainerFragment implements
 
 //                    int sdk = android.os.Build.VERSION.SDK_INT;
 //                    if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-//                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+//                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
 //                        clipboard.setText("" + mRide.share_ride);
 //                    } else {
-//                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+//                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
 //                        android.content.ClipData clip = android.content.ClipData.newPlainText("text label", "" + mRide.share_ride);
 //                        clipboard.setPrimaryClip(clip);
 //                    }
 //
-//                    Toast.makeText(getActivity(), "Copied to clipboard", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(activity, "Copied to clipboard", Toast.LENGTH_SHORT).show();
 
 
 //                    Intent shareIntent = new Intent();
@@ -3105,7 +2843,7 @@ public class HomeFragment extends BaseContainerFragment implements
 //                    startActivity(Intent.createChooser(shareIntent, "Share ride!"));
 
 
-                    Intent i = new Intent(getActivity(), ShareActivity.class);
+                    Intent i = new Intent(activity, ShareActivity.class);
                     i.putExtra("share_url", mRide.share_ride);
                     i.putExtra("file_path", image.getAbsolutePath());
                     startActivityForResult(i, SHARE_CODE);

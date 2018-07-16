@@ -1,4 +1,5 @@
 package com.app.android.cync;
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -26,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
@@ -46,11 +48,14 @@ import com.fragment.SettingFragment;
 import com.rey.material.widget.LinearLayout;
 import com.utils.CommonClass;
 import com.utils.Constants;
+import com.utils.GoogleLocationHelper;
 import com.webservice.VolleySetup;
 import com.webservice.VolleyStringRequest;
 import com.xmpp.XMPPService;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -164,11 +169,9 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
                 String action = getIntent().getAction();
                 String type = getIntent().getType();
 
-                if (getIntent().getExtras().containsKey("notification_ride"))
-                {
+                if (getIntent().getExtras().containsKey("notification_ride")) {
                     displayView(2);
-                }
-                else if (ride_id.trim().length() > 0) {
+                } else if (ride_id.trim().length() > 0) {
 
                     displayView(2);
                 } else if (Intent.ACTION_SEND.equals(action) && type != null) {
@@ -287,11 +290,9 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
         if (bundle != null) {
 
 
-            if (bundle.containsKey("notification_ride"))
-            {
+            if (bundle.containsKey("notification_ride")) {
                 displayView(2);
-            }
-            else if (bundle.containsKey("ride_id") && bundle.getString("ride_id", "").trim().length() > 0) {
+            } else if (bundle.containsKey("ride_id") && bundle.getString("ride_id", "").trim().length() > 0) {
                 ride_id = bundle.getString("ride_id", "");
 
                 Log.i(TAG, "onNewIntent: Ride id=" + ride_id);
@@ -300,8 +301,6 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
 
                     displayView(2);
                 }
-
-
 
 
             } else if (bundle.containsKey("notification")) {
@@ -338,7 +337,6 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
                 mIntentApp = intent;
                 Uri data = intent.getData();
                 if (data != null) {
-
 
 
                     //Log.i(TAG, "onNewIntent: received, with data: "+ data.getQueryParameter("id"));
@@ -574,7 +572,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
                 tag = "HomeFragment";
                 fragment = new HomeFragment(ride_id);
                 mIntentApp = null;
-                ride_id="";
+                ride_id = "";
                 break;
 
             case 3:
@@ -636,7 +634,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
                                 public void onClick(DialogInterface dialog, int id) {
                                 }
                             })
-                        /*.setNegativeButton("No", null)*/
+                            /*.setNegativeButton("No", null)*/
                             .show();
 //                    CommonClass.ShowToast(NavigationDrawerActivity.this,"Sorry you cannot change your password.");
                 }
@@ -664,7 +662,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
                 public void run() {
                     //Do something after 100ms
 
-                    ride_id="";
+                    ride_id = "";
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.container_body, finalFragment, finalTag);
@@ -756,7 +754,7 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
 
-        CommonClass.setRideIds(NavigationDrawerActivity.this,"");
+        CommonClass.setRideIds(NavigationDrawerActivity.this, "");
         CommonClass.setIsFirstTimepreference(NavigationDrawerActivity.this, "true");
         CommonClass.ClearUserpreference(NavigationDrawerActivity.this);
         CommonClass.ClearChatUserpreference(NavigationDrawerActivity.this);
@@ -870,5 +868,14 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
             builder.setNegativeButton("No", null);
         }
         builder.show();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (GoogleLocationHelper.checkIsGoogleLocationActivityResult(requestCode)) {
+            GoogleLocationHelper.getGoogleLocationHelper(this).onActivityResult(requestCode, resultCode, data);
+        }
     }
 }
