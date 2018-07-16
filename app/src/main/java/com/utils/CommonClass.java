@@ -73,6 +73,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
 
@@ -565,17 +567,11 @@ public class CommonClass {
 
     public static String getCurrentTimeStamp() {
         try {
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
             String currentTimeStamp = dateFormat.format(new Date()); // Find
-            // todays
-            // date
-
             return currentTimeStamp;
         } catch (Exception e) {
             e.printStackTrace();
-
             return null;
         }
     }
@@ -862,11 +858,11 @@ public class CommonClass {
                         final Dialog dialog = new Dialog(activity);
                         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                         dialog.setContentView(R.layout.dialog_confirmation);
-                        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-                        Button okBtn = (Button) dialog.findViewById(R.id.dialog_ok_btn);
-                        Button cancelBtn = (Button) dialog.findViewById(R.id.dialog_cancel_btn);
-                        TextView message = (TextView) dialog.findViewById(R.id.dialog_message);
+                        Button okBtn = dialog.findViewById(R.id.dialog_ok_btn);
+                        Button cancelBtn = dialog.findViewById(R.id.dialog_cancel_btn);
+                        TextView message = dialog.findViewById(R.id.dialog_message);
                         message.setText(rationalMessage);
                         okBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -1119,59 +1115,35 @@ public class CommonClass {
     }
 
 
-    public static void setlocationServiceCurrentState(Context ct,
-                                                      int state) {
-        // TODO Auto-generated method stub
-
-        @SuppressWarnings({"static-access", "deprecation"})
+    public static void setLocationServiceCurrentState(Context ct, int state) {
         SharedPreferences sp = ct.getSharedPreferences("state",
-                ct.MODE_PRIVATE);
+                Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
-
         peditor.putInt(KEY_SERVICE_STATE, state);
-
         peditor.commit();
-
     }
 
-    public static int getlocationServiceCurrentState(Context ct) {
-        // TODO Auto-generated method stub
-        @SuppressWarnings({"static-access", "deprecation"})
+    public static int getLocationServiceCurrentState(Context ct) {
         SharedPreferences sp = ct.getSharedPreferences("state",
-                ct.MODE_PRIVATE);
-
+                Context.MODE_PRIVATE);
         int tmp = sp.getInt(KEY_SERVICE_STATE, 0);
-
         return tmp;
-
     }
 
-
-    public static void setlocationServicepreference(Context ct,
-                                                    String isServiceStart) {
-        // TODO Auto-generated method stub
-
-        @SuppressWarnings({"static-access", "deprecation"})
+    public static void setLocationServiceStartStopPreference(Context ct,
+                                                             String isServiceStart) {
         SharedPreferences sp = ct.getSharedPreferences("isServiceStart",
-                ct.MODE_PRIVATE);
+                Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
-
         peditor.putString(KEY_SERVICE_START, isServiceStart);
-
         peditor.commit();
-
     }
 
-    public static String getlocationServicepreference(Context ct) {
-        // TODO Auto-generated method stub
-        @SuppressWarnings({"static-access", "deprecation"})
+    public static String getLocationServicePreference(Context ct) {
         SharedPreferences sp = ct.getSharedPreferences("isServiceStart",
-                ct.MODE_PRIVATE);
-
+                Context.MODE_PRIVATE);
         String tmp = sp.getString(KEY_SERVICE_START, "false");
-
         return tmp;
-
     }
 
     //
@@ -1200,30 +1172,22 @@ public class CommonClass {
     }
 
     public static int getTrackingInterval(Context ct) {
-        // TODO Auto-generated method stub
-        @SuppressWarnings({"static-access", "deprecation"})
+        if (ct == null) return 3000;
         SharedPreferences sp = ct.getSharedPreferences("tracking_time",
-                ct.MODE_PRIVATE);
-
-        int tmp = sp.getInt(KEY_TRACKING_INTERVAL, 3000);
-
-        return tmp;
-
+                Context.MODE_PRIVATE);
+        return sp.getInt(KEY_TRACKING_INTERVAL, 3000);
     }
-
 
     public static void setStartPauseInterval(Context ct, long times) {
         // TODO Auto-generated method stub
 
         @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
-                ct.MODE_PRIVATE);
+                Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
 
         peditor.putLong(KEY_START_PAUSE_INTERVAL, times);
-
         peditor.commit();
-
     }
 
     public static void setStopPauseInterval(Context ct, long times) {
@@ -1266,18 +1230,12 @@ public class CommonClass {
     }
 
     public static void clearPauseInterval(Context ct) {
-        // TODO Auto-generated method stub
-
-        @SuppressWarnings({"static-access", "deprecation"})
         SharedPreferences sp = ct.getSharedPreferences("pause_time",
-                ct.MODE_PRIVATE);
+                Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
-
         peditor.putLong(KEY_START_PAUSE_INTERVAL, 0);
         peditor.putLong(KEY_STOP_PAUSE_INTERVAL, 0);
-
         peditor.commit();
-
     }
 
 
@@ -1808,15 +1766,10 @@ public class CommonClass {
 
 
     public static String getRideIds(Context ct) {
-
-
         SharedPreferences sp = ct.getSharedPreferences("ridepref",
-                ct.MODE_PRIVATE);
+                Context.MODE_PRIVATE);
         String name = sp.getString(KEY_RIDE_ID, "");
-
         return name;
-
-
     }
 
 

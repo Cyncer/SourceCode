@@ -2,6 +2,7 @@ package com.utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -28,39 +29,56 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class GoogleLocationHelper {
     private static final String TAG = GoogleLocationHelper.class.getSimpleName();
 
-    private static GoogleLocationHelper instance = null;
+    //private static GoogleLocationHelper instance = null;
 
-    // location updates interval - 10sec
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    // fastest updates interval - 5 sec
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
+    private static HashMap<Context, GoogleLocationHelper> helperHashMap = null;
 
-    private static final int REQUEST_CHECK_SETTINGS = 1011;
+    // location updates interval - 5sec
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
+    // fastest updates interval - 3 sec
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
 
-    public Activity context;
+    private static final int REQUEST_CHECK_SETTINGS_SINGLE = 1011;
+    private static final int REQUEST_CHECK_SETTINGS_PERIODIC = 1012;
+
+    public Context context;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
     private LocationSettingsRequest mLocationSettingsRequest;
     private SettingsClient mSettingsClient;
 
-    private Location mCurrentLocation;
+    private static Location mCurrentLocation;
     private long mLastUpdateTime;
     private boolean mRequestingLocationUpdates;
+
+    //add location callbacks
+    private HashMap<OnLocation, OnLocation> callBacksSingle = new HashMap<>();
+    private HashMap<OnLocation, OnLocation> callBacksPeriodic = new HashMap<>();
 
     private GoogleLocationHelper() {
     }
 
-    public static GoogleLocationHelper getGoogleLocationHelper(Activity context) {
-        if (instance == null)
-            instance = new GoogleLocationHelper();
-        instance.context = context;
-        return instance;
+    public static GoogleLocationHelper getGoogleLocationHelper(Context context) {
+        if (helperHashMap == null)
+            helperHashMap = new HashMap<>();
+
+        if (helperHashMap.get(context) == null) {
+            GoogleLocationHelper instance = new GoogleLocationHelper();
+            helperHashMap.put(context, instance);
+        }
+
+        helperHashMap.get(context).context = context;
+        return helperHashMap.get(context);
     }
 
-    public void start() {
+    private void start() {
         if (!checkLocationPermission()) {
             return;
         }
@@ -68,14 +86,50 @@ public class GoogleLocationHelper {
         if (mCurrentLocation == null ||
                 (System.currentTimeMillis() - mLastUpdateTime) > 6 * 60 * 60 * 1000L) { //3 hour
             init();
-            createLocationRequest();
-            startLocationUpdates();
+            createLocationRequest(true);
+            startLocationUpdates(false);
         }
     }
 
-    public Location getLocation() {
+    public void singleLocation(OnLocation onLocationSingle) {
+        if (!checkLocationPermission()) {
+            return;
+        }
+
+        if (mCurrentLocation == null ||
+                (System.currentTimeMillis() - mLastUpdateTime) > 6 * 60 * 60 * 1000L) { //3 hour
+            if (onLocationSingle != null)
+                callBacksSingle.put(onLocationSingle, onLocationSingle);
+            init();
+            createLocationRequest(false);
+            startLocationUpdates(false);
+        } else {
+            if (onLocationSingle != null) {
+                onLocationSingle.onLocation(mCurrentLocation);
+            }
+        }
+    }
+
+    public void periodicLocation(OnLocation onLocation) {
+        if (!checkLocationPermission()) {
+            return;
+        }
+
+        if (onLocation != null)
+            callBacksPeriodic.put(onLocation, onLocation);
+
+        init();
+        createLocationRequest(true);
+        startLocationUpdates(true);
+    }
+
+    public static Location getLocationDirect() {
+        return mCurrentLocation;
+    }
+
+    private Location getLocation() {
         if (mCurrentLocation == null) {
-            start();
+            singleLocation(null);
         } else {
             return mCurrentLocation;
         }
@@ -86,15 +140,20 @@ public class GoogleLocationHelper {
         if (context == null)
             return;
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-        mSettingsClient = LocationServices.getSettingsClient(context);
+        if (mFusedLocationClient == null)
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        if (mSettingsClient == null)
+            mSettingsClient = LocationServices.getSettingsClient(context);
     }
 
-    private void createLocationRequest() {
+    private void createLocationRequest(boolean high) {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        if (high)
+            mLocationRequest.setSmallestDisplacement(10);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
+        mLocationRequest.setPriority(high ? LocationRequest.PRIORITY_HIGH_ACCURACY
+                : LocationRequest.PRIORITY_LOW_POWER);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
         builder.addLocationRequest(mLocationRequest);
@@ -116,14 +175,64 @@ public class GoogleLocationHelper {
                     CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
                     CommonClass.KEY_Current_Lng, String.valueOf(mCurrentLocation.getLongitude()));
 
-            Toast.makeText(context, "Location found successfully. You can now proceed.",
-                    Toast.LENGTH_SHORT).show();
-            //stop after getting location
-            stopLocationUpdates();
+            Log.i(TAG, "Location found, periodic" + mCurrentLocation);
+
+
+            Iterator it = callBacksPeriodic.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                //System.out.println(pair.getKey() + " = " + pair.getValue());
+                if (pair.getValue() != null) {
+                    ((OnLocation) pair.getValue()).onLocation(locationResult.getLastLocation());
+                } else {
+                    it.remove();
+                }
+            }
+
+            if (callBacksPeriodic.size() == 0) {
+                stopLocationUpdates(true);
+            }
         }
     };
 
-    private void startLocationUpdates() {
+    private LocationCallback mLocationCallbackSingle = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            // location is received
+            mCurrentLocation = locationResult.getLastLocation();
+            mLastUpdateTime = System.currentTimeMillis();
+
+            CommonClass.setPrefranceByKey_Value(context,
+                    CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
+                    CommonClass.KEY_Current_Lat, String.valueOf(mCurrentLocation.getLatitude()));
+            CommonClass.setPrefranceByKey_Value(context,
+                    CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
+                    CommonClass.KEY_Current_Lng, String.valueOf(mCurrentLocation.getLongitude()));
+
+            Toast.makeText(context, "Location found successfully. You can now proceed.",
+                    Toast.LENGTH_SHORT).show();
+
+            Log.i(TAG, "Location found ->" + mCurrentLocation.toString());
+
+            Iterator it = callBacksSingle.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                //System.out.println(pair.getKey() + " = " + pair.getValue());
+                if (pair.getValue() != null) {
+                    ((OnLocation) pair.getValue()).onLocation(locationResult.getLastLocation());
+                }
+                //notify and remove call backs
+                it.remove();
+            }
+
+            //stop after getting single location
+            stopLocationUpdates(false);
+        }
+    };
+
+
+    private void startLocationUpdates(final boolean periodic) {
         mSettingsClient
                 .checkLocationSettings(mLocationSettingsRequest)
                 .addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
@@ -136,9 +245,11 @@ public class GoogleLocationHelper {
                             return;
                         }
 
+                        Log.i(TAG, "Starting location updates, periodic?" + periodic);
+
                         //Toast.makeText(context.getApplicationContext(), "Started location updates!", Toast.LENGTH_SHORT).show();
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                                mLocationCallback, Looper.myLooper());
+                                !periodic ? mLocationCallbackSingle : mLocationCallback, Looper.myLooper());
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -153,7 +264,11 @@ public class GoogleLocationHelper {
                                     // Show the dialog by calling startResolutionForResult(), and check the
                                     // result in onActivityResult().
                                     ResolvableApiException rae = (ResolvableApiException) e;
-                                    rae.startResolutionForResult(context, REQUEST_CHECK_SETTINGS);
+
+                                    if (context instanceof Activity) {
+                                        rae.startResolutionForResult((Activity) context, !periodic ? REQUEST_CHECK_SETTINGS_SINGLE
+                                                : REQUEST_CHECK_SETTINGS_PERIODIC);
+                                    }
                                 } catch (IntentSender.SendIntentException sie) {
                                     Log.i(TAG, "PendingIntent unable to execute request.");
                                 }
@@ -168,33 +283,49 @@ public class GoogleLocationHelper {
                 });
     }
 
-    private void stopLocationUpdates() {
+    private void stopLocationUpdates(final boolean periodic) {
         // Removing location updates
-        mFusedLocationClient
-                .removeLocationUpdates(mLocationCallback)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // Toast.makeText(context, "Location updates stopped!", Toast.LENGTH_SHORT).show();
-                        Log.i(TAG, "Location updates stopped.");
-                    }
-                });
+
+        if (((periodic && mLocationCallback != null) || !periodic && mLocationCallbackSingle != null)
+                && mFusedLocationClient != null) {
+            mFusedLocationClient
+                    .removeLocationUpdates(periodic ? mLocationCallback : mLocationCallbackSingle)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.i(TAG, "Location updates stopped. Periodic? " + periodic);
+                        }
+                    });
+        }
+    }
+
+    public void onDestroy(Context activity) {
+        stopLocationUpdates(true);
+        stopLocationUpdates(false);
+        if (helperHashMap != null && activity != null) {
+            helperHashMap.remove(activity);
+        }
     }
 
     /*This is onActivity Result*/
     public static boolean checkIsGoogleLocationActivityResult(int requestCode) {
-        return requestCode != REQUEST_CHECK_SETTINGS;
+        return requestCode == REQUEST_CHECK_SETTINGS_SINGLE || requestCode == REQUEST_CHECK_SETTINGS_PERIODIC;
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             // Check for the integer request code originally supplied to startResolutionForResult().
-            case REQUEST_CHECK_SETTINGS:
+            case REQUEST_CHECK_SETTINGS_SINGLE:
+            case REQUEST_CHECK_SETTINGS_PERIODIC:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         Log.e(TAG, "User agreed to make required location settings changes.");
-                        // Nothing to do. startLocationupdates() gets called in onResume again.
-                        start();
+                        // Nothing to do. startLocationUpdates() gets called in onResume again.
+                        if (requestCode == REQUEST_CHECK_SETTINGS_SINGLE) {
+                            singleLocation(null);
+                        } else {
+                            periodicLocation(null);
+                        }
                         break;
                     case Activity.RESULT_CANCELED:
                         Log.e(TAG, "User chose not to make required location settings changes.");
@@ -212,6 +343,10 @@ public class GoogleLocationHelper {
             return false;
         }
         return true;
+    }
+
+    public static interface OnLocation {
+        void onLocation(Location location);
     }
 
 }

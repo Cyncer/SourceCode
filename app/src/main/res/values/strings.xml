@@ -121,5 +121,6 @@
     <string name="storage_permission_denied">Permission to access storage was denied</string>
     <string name="sample_list_load_error">One or more sample lists failed to load</string>
     <string name="asset_statements" translatable="false">[{\n  \"relation\": [\"delegate_permission/common.handle_all_urls\"],\n  \"target\": {\n    \"namespace\": \"web\",\n    \"site\": \"http://cync.com.au\",\n  }\n}]</string>
+    <string name="location_not_found">Location not found, please try again.</string>
 
 </resources>

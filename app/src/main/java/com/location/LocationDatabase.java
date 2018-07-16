@@ -22,6 +22,7 @@ import java.util.List;
 public class LocationDatabase {
 
     private static final String TAG = "LocationDatabase";
+
     public static SQLiteDatabase DatabaseLite = null;
     private final static String DATABASE = "LocationInfoDB";
     private static final int db_version = 1;
@@ -70,7 +71,6 @@ public class LocationDatabase {
         public void onUpgrade(SQLiteDatabase db, int arg1, int arg2) {
 
 
-
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION_HISTORY);
 
             // Create tables again
@@ -88,129 +88,80 @@ public class LocationDatabase {
         dbhelp.close();
     }
 
-    public void UpdateLastRecord(String mduration,String mDistance)
-    {
+    public void UpdateLastRecord(String mduration, String mDistance) {
 
-        int ID=-1;
+        int ID = -1;
 
         open();
-        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE   ID = (SELECT MAX(ID)  FROM LocationHistory)", null);
+        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE ID = (SELECT MAX(ID) FROM LocationHistory)", null);
 
-        c.moveToFirst();
-        for (int i = 0; i < c.getCount(); i++) {
-
-
-            ID = c.getInt(c.getColumnIndex("ID"));
-            Log.d("copunt", "== ID == " +ID);
-
-
-            c.moveToNext();
-
+        if (c.moveToFirst()) {
+            do {
+                ID = c.getInt(c.getColumnIndex("ID"));
+            } while (c.moveToNext());
         }
-
-
         c.close();
 
-
-        if(ID!=-1) {
+        if (ID != -1) {
             ContentValues args = new ContentValues();
-
             args.put("duration", mduration);
             args.put("distance", mDistance);
-
             int x = DatabaseLite.update(TABLE_LOCATION_HISTORY, args, "ID=" + ID, null);
             Log.i(TAG, "UpdateLastRecord: Updated Distance = " + x);
         }
-//          int x=DatabaseLite.update(TABLE_LOCATION_HISTORY, args,  "ID=(SELECT max(ID) FROM "+TABLE_LOCATION_HISTORY,
-//                null);
         close();
-
-
-
-//        Log.i(TAG, "UpdateLastRecord: Updated Distance = "+mDistance);
-//        open();
-//        ContentValues args = new ContentValues();
-//
-//        args.put("duration", mduration);
-//       // args.put("distance", mDistance);
-//
-//        //DatabaseLite.update(TABLE_LOCATION_HISTORY, args, "_id="+id, null);
-//          int x=DatabaseLite.update(TABLE_LOCATION_HISTORY, args,  "ID=(SELECT max(ID) FROM "+TABLE_LOCATION_HISTORY,
-//                null);
-//
-//        Log.i(TAG, "UpdateLastRecord: Updated Distance = "+x);
-//
-//        close();
     }
 
     public void INSERT_NEW_MESSAGE(String userid, String latitude, String longitude, String status, String timestamp,
-                                   float speed, String avgspeed, String distance,String duration) {
+                                   float speed, String avgspeed, String distance, String duration) {
         open();
 
+        ContentValues initialVal = new ContentValues();
+        initialVal.put("userid", userid);
+        initialVal.put("latitude", latitude);
+        initialVal.put("longitude", longitude);
+        initialVal.put("status", status);
+        initialVal.put("timestamp", timestamp);
+        initialVal.put("speed", speed);
+        initialVal.put("avgspeed", avgspeed);
+        initialVal.put("distance", distance);
+        initialVal.put("duration", duration);
+        DatabaseLite.insert(TABLE_LOCATION_HISTORY, null, initialVal);
 
+        Log.d(TAG, "TABLE_LOCATION_HISTORY : Inserted = userid=" + userid + " lat->" + latitude + " lng->"
+                + longitude + " status->" + status + " avgSpeed->" + avgspeed);
 
-
-        Log.d("Success", "Successfully Insert userid=" + userid);
-        Log.d("Success", "Successfully Insert latitude=" + latitude);
-        Log.d("Success", "Successfully Insert status=" + status);
-        Log.d("Success", "Successfully Insert avgspeed=" + avgspeed);
-
-        ContentValues initialval = new ContentValues();
-        initialval.put("userid", userid);
-        initialval.put("latitude", latitude);
-        initialval.put("longitude", longitude);
-        initialval.put("status", status);
-        initialval.put("timestamp", timestamp);
-        initialval.put("speed", speed);
-        initialval.put("avgspeed", avgspeed);
-        initialval.put("distance", distance);
-        initialval.put("duration", duration);
-        DatabaseLite.insert(TABLE_LOCATION_HISTORY, null, initialval);
-
-        Log.d("Success", "Successfully Insert");
         close();
     }
 
 
-
-
-
-    public String getAverageSpeed()
-    {
-        String avgSpeed="";
+    public String getAverageSpeed() {
+        String avgSpeed = "";
 
         open();
-        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE   ID = (SELECT MAX(ID)  FROM LocationHistory)", null);
+        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE ID = (SELECT MAX(ID)  FROM LocationHistory)", null);
 
         c.moveToFirst();
         for (int i = 0; i < c.getCount(); i++) {
-
-
             avgSpeed = c.getString(c.getColumnIndex("avgspeed"));
-
-
-
             c.moveToNext();
-
         }
 
-        Log.d("copunt", "getAverageSpeed = " +avgSpeed);
+        Log.d("copunt", "getAverageSpeed = " + avgSpeed);
         c.close();
 
         close();
         return avgSpeed;
     }
 
-    public String getDistance()
-    {
-        String distance="";
+    public String getDistance() {
+        String distance = "";
 
         open();
         Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE   ID = (SELECT MAX(ID)  FROM LocationHistory)", null);
 
         c.moveToFirst();
         for (int i = 0; i < c.getCount(); i++) {
-
 
 
             distance = c.getString(c.getColumnIndex("distance"));
@@ -220,33 +171,24 @@ public class LocationDatabase {
 
         }
 
-        Log.d("copunt", "getdistance =" +distance);
+        Log.d("copunt", "getdistance =" + distance);
         c.close();
 
         close();
         return distance;
     }
 
-    public String getDuration()
-    {
-        String duration="";
+    public String getDuration() {
+        String duration = "";
 
         open();
-        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE   ID = (SELECT MAX(ID)  FROM LocationHistory)", null);
-
-        c.moveToFirst();
-        for (int i = 0; i < c.getCount(); i++) {
-
-
-
-            duration = c.getString(c.getColumnIndex("duration"));
-
-
-            c.moveToNext();
-
+        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE ID = (SELECT MAX(ID) FROM LocationHistory)", null);
+        if (c.moveToFirst()) {
+            do {
+                duration = c.getString(c.getColumnIndex("duration"));
+            } while (c.moveToNext());
         }
-
-        Log.d("copunt", "getDuration =" +duration);
+        Log.d(TAG, "getDuration =" + duration);
         c.close();
 
         close();
@@ -254,24 +196,23 @@ public class LocationDatabase {
     }
 
 
-    public String getTopSpeed()
-    {
-        String speed="";
+    public String getTopSpeed() {
+        String speed = "";
 
         open();
         Cursor c = DatabaseLite.rawQuery("select max(speed) as speed from LocationHistory", null);
         //Cursor c = DatabaseLite.query(TABLE_LOCATION_HISTORY, null, "speed=(SELECT MAX(speed))", null, null, null, null);
 
-        Log.d("copunt", "getspeed =" +c.getCount());
+        Log.d("copunt", "getspeed =" + c.getCount());
 
         try {
             c.moveToFirst();
-            speed =""+ c.getFloat(c.getColumnIndex("speed"));
+            speed = "" + c.getFloat(c.getColumnIndex("speed"));
         } finally {
             c.close();
         }
 
-        Log.d("copunt", "getspeed =" +speed);
+        Log.d("copunt", "getspeed =" + speed);
         c.close();
 
         close();
@@ -279,8 +220,7 @@ public class LocationDatabase {
     }
 
 
-    public void deleteAllData()
-    {
+    public void deleteAllData() {
         open();
         DatabaseLite.execSQL("delete from LocationHistory");
         close();
@@ -346,21 +286,21 @@ public class LocationDatabase {
 
     public String getAllDataJSON() {
 
-        String userid, latitude, longitude, status, timestamp,speed,avgspeed,distance,duration;
+        String userid, latitude, longitude, status, timestamp, speed, avgspeed, distance, duration;
 
         ArrayList<HashMap<String, String>> ImgList = new ArrayList<HashMap<String, String>>();
         open();
         Cursor c = DatabaseLite.rawQuery("select * from LocationHistory", null);
 
 
-        JSONArray jMain=new JSONArray();
+        JSONArray jMain = new JSONArray();
 
         Log.d("copunt", "-" + c.getCount());
         c.moveToFirst();
         for (int i = 0; i < c.getCount(); i++) {
 
 
-            JSONObject jObj=new JSONObject();
+            JSONObject jObj = new JSONObject();
             HashMap<String, String> map = new HashMap<String, String>();
             userid = c.getString(c.getColumnIndex("userid"));
             latitude = c.getString(c.getColumnIndex("latitude"));
@@ -374,14 +314,14 @@ public class LocationDatabase {
 
 
             try {
-                jObj.put("lat",Double.parseDouble(latitude));
+                jObj.put("lat", Double.parseDouble(latitude));
             } catch (JSONException e) {
                 e.printStackTrace();
 
             }
 
             try {
-                jObj.put("lon",Double.parseDouble(longitude));
+                jObj.put("lon", Double.parseDouble(longitude));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -400,15 +340,15 @@ public class LocationDatabase {
 //            ImgList.add(map);
             c.moveToNext();
 
-            Log.i(TAG, ":: userid = "+userid);
-            Log.i(TAG, ":: latitude = "+latitude);
-            Log.i(TAG, ":: longitude = "+longitude);
-            Log.i(TAG, ":: status = "+status);
-            Log.i(TAG, ":: timestamp = "+timestamp);
-            Log.i(TAG, ":: speed = "+speed);
-            Log.i(TAG, ":: avgspeed = "+avgspeed);
-            Log.i(TAG, ":: distance = "+distance);
-            Log.i(TAG, ":: duration = "+duration);
+            Log.i(TAG, ":: userid = " + userid);
+            Log.i(TAG, ":: latitude = " + latitude);
+            Log.i(TAG, ":: longitude = " + longitude);
+            Log.i(TAG, ":: status = " + status);
+            Log.i(TAG, ":: timestamp = " + timestamp);
+            Log.i(TAG, ":: speed = " + speed);
+            Log.i(TAG, ":: avgspeed = " + avgspeed);
+            Log.i(TAG, ":: distance = " + distance);
+            Log.i(TAG, ":: duration = " + duration);
         }
 
         Log.d("copunt", "-" + c.getCount());
@@ -420,25 +360,24 @@ public class LocationDatabase {
     }
 
 
-
     public List<LatLng> getLocationList() {
 
-        String userid, latitude, longitude, status, timestamp,speed,avgspeed,distance,duration;
+        String userid, latitude, longitude, status, timestamp, speed, avgspeed, distance, duration;
 
         ArrayList<HashMap<String, String>> ImgList = new ArrayList<HashMap<String, String>>();
         open();
         Cursor c = DatabaseLite.rawQuery("select * from LocationHistory", null);
 
-        List<LatLng> mList=new ArrayList<>();
+        List<LatLng> mList = new ArrayList<>();
 
 
         Log.d("copunt", "-" + c.getCount());
         c.moveToFirst();
         for (int i = 0; i < c.getCount(); i++) {
 
-            double lat=0.0,lng=0.0;
+            double lat = 0.0, lng = 0.0;
 
-            JSONObject jObj=new JSONObject();
+            JSONObject jObj = new JSONObject();
             HashMap<String, String> map = new HashMap<String, String>();
             userid = c.getString(c.getColumnIndex("userid"));
             latitude = c.getString(c.getColumnIndex("latitude"));
@@ -452,21 +391,13 @@ public class LocationDatabase {
 
 
             try {
-                lat=Double.parseDouble(latitude);
-                lng= Double.parseDouble(longitude);
+                lat = Double.parseDouble(latitude);
+                lng = Double.parseDouble(longitude);
 
-                mList.add(new LatLng(lat,lng));
-            }
-            catch (NumberFormatException e)
-            {
+                mList.add(new LatLng(lat, lng));
+            } catch (NumberFormatException e) {
 
             }
-
-
-
-
-
-
 
 
 //            map.put("userid", userid);
@@ -509,15 +440,6 @@ public class LocationDatabase {
 
         close();
     }
-
-
-
-
-
-
-
-
-
 
 
 }
