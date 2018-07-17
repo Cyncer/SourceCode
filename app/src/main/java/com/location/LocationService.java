@@ -1,6 +1,7 @@
 package com.location;
 
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,6 +11,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -39,6 +41,8 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
     private Runnable locationRunable;
     //private GPSTrackerLD tracker;
     private LocationDatabase db;
+    private PowerManager.WakeLock wl = null;
+
 
     @Override
     public void onCreate() {
@@ -68,8 +72,30 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
         /*initHandler();*/
         initLocationHandler();
         createNotificationIcon();
+        addWakeLock();
         // mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
         // CommonClass.getTrackingInterval(getBaseContext()), 0, this);
+    }
+
+    @SuppressLint("WakelockTimeout")
+    private void addWakeLock() {
+        try {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "cync_lock");
+                wl.acquire();
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private void releaseWakeLock() {
+        try {
+            if (wl != null) {
+                wl.release();
+            }
+        } catch (Exception e) {
+        }
     }
 
     /*private void initHandler() {
@@ -211,6 +237,7 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
 
         stopForeground(true);
 
+        releaseWakeLock();
         super.onDestroy();
     }
 
