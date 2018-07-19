@@ -288,18 +288,14 @@ public class LocationDatabase {
 
         String userid, latitude, longitude, status, timestamp, speed, avgspeed, distance, duration;
 
-        ArrayList<HashMap<String, String>> ImgList = new ArrayList<HashMap<String, String>>();
         open();
         Cursor c = DatabaseLite.rawQuery("select * from LocationHistory", null);
-
 
         JSONArray jMain = new JSONArray();
 
         Log.d("copunt", "-" + c.getCount());
         c.moveToFirst();
         for (int i = 0; i < c.getCount(); i++) {
-
-
             JSONObject jObj = new JSONObject();
             HashMap<String, String> map = new HashMap<String, String>();
             userid = c.getString(c.getColumnIndex("userid"));
@@ -312,12 +308,10 @@ public class LocationDatabase {
             distance = c.getString(c.getColumnIndex("distance"));
             duration = c.getString(c.getColumnIndex("duration"));
 
-
             try {
                 jObj.put("lat", Double.parseDouble(latitude));
             } catch (JSONException e) {
                 e.printStackTrace();
-
             }
 
             try {
@@ -328,16 +322,6 @@ public class LocationDatabase {
 
             jMain.put(jObj);
 
-//            map.put("userid", userid);
-//            map.put("latitude", latitude);
-//            map.put("longitude", longitude);
-//            map.put("status", status);
-//            map.put("timestamp", timestamp);
-//            map.put("speed", speed);
-//            map.put("avgspeed", avgspeed);
-//            map.put("distance", distance);
-//            map.put("duration", duration);
-//            ImgList.add(map);
             c.moveToNext();
 
             Log.i(TAG, ":: userid = " + userid);
@@ -352,7 +336,6 @@ public class LocationDatabase {
         }
 
         Log.d("copunt", "-" + c.getCount());
-
         c.close();
 
         close();

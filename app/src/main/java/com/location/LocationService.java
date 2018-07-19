@@ -143,8 +143,7 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
                         if (lastLocation.getLatitude() == currentLat
                                 && lastLocation.getLongitude() == currentLon) {
                             //both are same, no need to enter to database
-                            locationHandle.postDelayed(this,
-                                    CommonClass.getTrackingInterval(getBaseContext()));
+                            locationHandle.postDelayed(this, 3000);
                             return;
                         }
                     }
@@ -199,12 +198,12 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
                         e.printStackTrace();
                     }*/
                 }
-                locationHandle.postDelayed(this,
-                        CommonClass.getTrackingInterval(getBaseContext()));
+                locationHandle.postDelayed(this, 3000/*
+                        CommonClass.getTrackingInterval(getBaseContext())*/);
             }
         };
-        locationHandle.postDelayed(locationRunable,
-                CommonClass.getTrackingInterval(getBaseContext()));
+        locationHandle.postDelayed(locationRunable, 3000/*
+                CommonClass.getTrackingInterval(getBaseContext())*/);
     }
 
     @Override
