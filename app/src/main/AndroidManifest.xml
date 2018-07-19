@@ -279,6 +279,11 @@
                 <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
         </receiver>
+        <receiver android:name="com.location.LocationBroadcastForOreo">
+            <intent-filter>
+                <action android:name="com.app.android.cync.PROCESS_LOC_UPDATES" />
+            </intent-filter>
+        </receiver>
 
         <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
         <service android:name="com.firebase.MyFirebaseMessengingService">

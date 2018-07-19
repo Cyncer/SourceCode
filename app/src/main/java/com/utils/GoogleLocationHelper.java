@@ -41,21 +41,21 @@ public class GoogleLocationHelper {
     private static HashMap<Context, GoogleLocationHelper> helperHashMap = null;
 
     // location updates interval - 5sec
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
     // fastest updates interval - 3 sec
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
 
     private static final int REQUEST_CHECK_SETTINGS_SINGLE = 1011;
     private static final int REQUEST_CHECK_SETTINGS_PERIODIC = 1012;
 
     public Context context;
     private FusedLocationProviderClient mFusedLocationClient;
-    private LocationRequest mLocationRequest;
-    private LocationSettingsRequest mLocationSettingsRequest;
+    private LocationRequest mLocationRequestSingle, mLocationRequestPeriodic;
+    private LocationSettingsRequest mLocationSettingsRequestPeriodic, mLocationSettingsRequestSingle;
     private SettingsClient mSettingsClient;
 
-    private static Location mCurrentLocation;
-    private long mLastUpdateTime;
+    public static Location mCurrentLocation;
+    public static long mLastUpdateTime;
     private boolean mRequestingLocationUpdates;
 
     //add location callbacks
@@ -79,7 +79,7 @@ public class GoogleLocationHelper {
     }
 
     private void start() {
-        if (!checkLocationPermission()) {
+        if (!checkLocationPermission(context)) {
             return;
         }
 
@@ -92,12 +92,12 @@ public class GoogleLocationHelper {
     }
 
     public void singleLocation(OnLocation onLocationSingle) {
-        if (!checkLocationPermission()) {
+        if (!checkLocationPermission(context)) {
             return;
         }
 
         if (mCurrentLocation == null ||
-                (System.currentTimeMillis() - mLastUpdateTime) > 6 * 60 * 60 * 1000L) { //3 hour
+                (System.currentTimeMillis() - mLastUpdateTime) > 2000L) { //2 sec
             if (onLocationSingle != null)
                 callBacksSingle.put(onLocationSingle, onLocationSingle);
             init();
@@ -111,7 +111,7 @@ public class GoogleLocationHelper {
     }
 
     public void periodicLocation(OnLocation onLocation) {
-        if (!checkLocationPermission()) {
+        if (!checkLocationPermission(context)) {
             return;
         }
 
@@ -147,17 +147,24 @@ public class GoogleLocationHelper {
     }
 
     private void createLocationRequest(boolean high) {
-        mLocationRequest = new LocationRequest();
+        LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         if (high)
-            mLocationRequest.setSmallestDisplacement(10);
+            mLocationRequest.setSmallestDisplacement(5);
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setPriority(high ? LocationRequest.PRIORITY_HIGH_ACCURACY
                 : LocationRequest.PRIORITY_LOW_POWER);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
         builder.addLocationRequest(mLocationRequest);
-        mLocationSettingsRequest = builder.build();
+
+        if (high) {
+            mLocationRequestPeriodic = mLocationRequest;
+            mLocationSettingsRequestPeriodic = builder.build();
+        } else {
+            mLocationRequestSingle = mLocationRequest;
+            mLocationSettingsRequestSingle = builder.build();
+        }
     }
 
     private LocationCallback mLocationCallback = new LocationCallback() {
@@ -165,6 +172,9 @@ public class GoogleLocationHelper {
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
             // location is received
+            if (locationResult == null) {
+                return;
+            }
             mCurrentLocation = locationResult.getLastLocation();
             mLastUpdateTime = System.currentTimeMillis();
 
@@ -200,6 +210,10 @@ public class GoogleLocationHelper {
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
             // location is received
+            if (locationResult == null) {
+                return;
+            }
+
             mCurrentLocation = locationResult.getLastLocation();
             mLastUpdateTime = System.currentTimeMillis();
 
@@ -234,13 +248,13 @@ public class GoogleLocationHelper {
 
     private void startLocationUpdates(final boolean periodic) {
         mSettingsClient
-                .checkLocationSettings(mLocationSettingsRequest)
+                .checkLocationSettings(periodic ? mLocationSettingsRequestPeriodic : mLocationSettingsRequestSingle)
                 .addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
                     @Override
                     public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                         Log.i(TAG, "All location settings are satisfied.");
 
-                        if (!checkLocationPermission()) {
+                        if (!checkLocationPermission(context)) {
                             Log.i(TAG, "Permission Denied!! Location will not update");
                             return;
                         }
@@ -248,7 +262,7 @@ public class GoogleLocationHelper {
                         Log.i(TAG, "Starting location updates, periodic?" + periodic);
 
                         //Toast.makeText(context.getApplicationContext(), "Started location updates!", Toast.LENGTH_SHORT).show();
-                        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                        mFusedLocationClient.requestLocationUpdates(periodic ? mLocationRequestPeriodic : mLocationRequestSingle,
                                 !periodic ? mLocationCallbackSingle : mLocationCallback, Looper.myLooper());
                     }
                 })
@@ -336,7 +350,7 @@ public class GoogleLocationHelper {
         }
     }
 
-    private boolean checkLocationPermission() {
+    public static boolean checkLocationPermission(Context context) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission Denied!! Location will not update");

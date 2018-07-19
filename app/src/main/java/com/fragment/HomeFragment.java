@@ -283,7 +283,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            googleMap.setMyLocationEnabled(false);
+            googleMap.setMyLocationEnabled(true);
 
             GoogleLocationHelper.getGoogleLocationHelper(activity)
                     .singleLocation(new GoogleLocationHelper.OnLocation() {
@@ -450,7 +450,7 @@ public class HomeFragment extends BaseContainerFragment implements
                 if (googleMap != null /*&& arrayList.size() > 0*/) {
 
                     if (builder != null) {
-                        if (arrayList.size() > 0)
+                        if (arrayList != null && arrayList.size() > 0)
                             builder.include(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
                     }
 //                    CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -485,7 +485,7 @@ public class HomeFragment extends BaseContainerFragment implements
                         CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
                                 .target(new LatLng(l.getLatitude(), l.getLongitude()));
 
-                        cameraBuilder.zoom(15);
+                        cameraBuilder.zoom(14);
 
                         CameraPosition cameraPosition = cameraBuilder.build();
                         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
@@ -493,7 +493,7 @@ public class HomeFragment extends BaseContainerFragment implements
                         onlyOnce = false;
                     }
 
-                    if (arrayList.size() > 0) {
+                    /*if (arrayList.size() > 0) {
                         CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
                                 .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
 
@@ -502,7 +502,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         CameraPosition cameraPosition = cameraBuilder.build();
                         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    }
+                    }*/
 
                     onlyOnce = false;
                 }
@@ -1193,7 +1193,8 @@ public class HomeFragment extends BaseContainerFragment implements
                 long timeStart = SystemClock.elapsedRealtime();
                 CommonClass.setStartTime(activity, timeStart);
 
-                activity.startService(new Intent(activity, LocationService.class));
+                LocationService.startService(activity);
+
                 imgPlayPause.setImageResource(R.drawable.btn_pause);
 
             } else if (imgPlayPause.getDrawable().getConstantState().equals
@@ -1273,7 +1274,7 @@ public class HomeFragment extends BaseContainerFragment implements
                 double disPause = CommonClass.getStopPauseDistance(activity) - CommonClass.getStartPauseDistance(activity);
                 CommonClass.setPauseDistance(activity, (float) disPause);
 
-                activity.stopService(new Intent(activity, LocationService.class));
+                LocationService.stopService(activity);
             }
 
             CommonClass.setLocationServiceStartStopPreference(activity, "false");
@@ -1281,7 +1282,7 @@ public class HomeFragment extends BaseContainerFragment implements
             long timeStop = SystemClock.elapsedRealtime();
             CommonClass.setStopTime(activity, timeStop);
 
-            activity.stopService(new Intent(activity, LocationService.class));
+            LocationService.stopService(activity);
 
             imgPlayPause.setImageResource(R.drawable.btn_record);
             CommonClass.setLocationServiceCurrentState(activity, R.drawable.btn_record);

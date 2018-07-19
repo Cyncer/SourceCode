@@ -9,40 +9,65 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.ApplicationController;
 import com.app.android.cync.NavigationDrawerActivity;
 import com.app.android.cync.R;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.utils.CommonClass;
 import com.utils.GoogleLocationHelper;
 
-public class LocationService extends Service implements GoogleLocationHelper.OnLocation {
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.Date;
+
+public class LocationService extends Service {
     // private static LocationManager mLocationManager;
     private final static String TAG = "LocationService";
 
     private static final String NOTIFICATION_CHANNEL_ID = "1234";
 
-    private Location lastLocation = new Location("last");
     private Data data;
-    private int notificationID = 1011;
-    private double currentLon = 0;
-    private double currentLat = 0;
-    private double lastLon = 0;
-    private double lastLat = 0;
-    /*private Handler h = new Handler();
-    private Runnable r;*/
+    private static final int NOTIFICATION_ID = 1011;
     private Handler locationHandle = new Handler();
     private Runnable locationRunable;
-    //private GPSTrackerLD tracker;
     private LocationDatabase db;
     private PowerManager.WakeLock wl = null;
+    private Location mLastLocation = new Location("last");
 
+    public static void startService(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(new Intent(context, LocationService.class));
+        } else {
+            context.startService(new Intent(context, LocationService.class));
+        }
+    }
+
+    public static void stopService(Context context) {
+        context.stopService(new Intent(context, LocationService.class));
+    }
 
     @Override
     public void onCreate() {
@@ -66,8 +91,7 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
         data.setTime(time);
 
         //tracker = new GPSTrackerLD(getApplicationContext());
-
-        GoogleLocationHelper.getGoogleLocationHelper(this).periodicLocation(this);
+        init();
 
         /*initHandler();*/
         initLocationHandler();
@@ -120,9 +144,9 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
             public void run() {
                 if (data.isRunning()) {
                     /*try {*/
-                    Location location = GoogleLocationHelper.getLocationDirect();
+                    Location location = GoogleLocationHelper.mCurrentLocation;
                     if (location == null || location.getAccuracy() > 700) {
-                        locationHandle.postDelayed(this, 1000);
+                        locationHandle.postDelayed(this, 3000);
                         return;
                     }
 
@@ -132,33 +156,29 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
 
                     /*Log.d("asd", "gps tracker = " + lat + " long " + longt);*/
                     /*Location location = tracker.getLastLocation();*/
-                    currentLat = location.getLatitude();
-                    currentLon = location.getLongitude();
 
                     if (data.isFirstTime()) {
-                        lastLat = currentLat;
-                        lastLon = currentLon;
+                        mLastLocation.setLatitude(location.getLatitude());
+                        mLastLocation.setLongitude(location.getLongitude());
                         data.setFirstTime(false);
                     } else {
-                        if (lastLocation.getLatitude() == currentLat
-                                && lastLocation.getLongitude() == currentLon) {
+                        if (mLastLocation.getLatitude() == location.getLatitude()
+                                && mLastLocation.getLongitude() == location.getLongitude()) {
                             //both are same, no need to enter to database
                             locationHandle.postDelayed(this, 3000);
                             return;
                         }
                     }
 
-                    lastLocation.setLatitude(lastLat);
-                    lastLocation.setLongitude(lastLon);
-                    double distance = lastLocation.distanceTo(location);
+                    mLastLocation.setLatitude(location.getLatitude());
+                    mLastLocation.setLongitude(location.getLongitude());
+
+                    double distance = mLastLocation.distanceTo(location);
 
                     data.addDistance(distance);
 
-                    lastLat = currentLat;
-                    lastLon = currentLon;
 //						if (location.getAccuracy() < distance) {
 //							data.addDistance(distance);
-//
 //							lastLat = currentLat;
 //							lastLon = currentLon;
 //						}
@@ -183,6 +203,9 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
                                 "" + data.getDistanceKm(),
                                 "" + (SystemClock.elapsedRealtime() - data.getTime()));
 
+                        writeFile("" + String.valueOf(location.getLatitude()) + "," +
+                                String.valueOf(location.getLongitude()) + "\n");
+
                         Intent intent = new Intent("com.cync.location.data"); //FILTER is a string to identify this intent
                         intent.putExtra("latitude", location.getLatitude());
                         intent.putExtra("longitude", location.getLongitude());
@@ -204,6 +227,28 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
         };
         locationHandle.postDelayed(locationRunable, 3000/*
                 CommonClass.getTrackingInterval(getBaseContext())*/);
+    }
+
+    public void writeFile(String mValue) {
+        String filename = Environment.getExternalStorageDirectory()
+                .getPath() + "/cync_log.txt";
+        File file = new File(filename);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file, true);
+            OutputStreamWriter writer = new OutputStreamWriter(fileOutputStream);
+            writer.write(new Date().toString() + " " + mValue);
+            writer.close();
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -228,6 +273,8 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
         GoogleLocationHelper.getGoogleLocationHelper(this).onDestroy(this);
 
         cancellAllNotifications();
+
+        removeLocationUpdates();
 
         /*h.removeCallbacks(r);*/
         if (locationHandle != null && locationRunable != null) {
@@ -263,8 +310,8 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
                 .setContentIntent(contentIntent);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (notificationManager != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O
+        if (notificationManager != null
+                && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O
                 && notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Silent", importance);
@@ -278,16 +325,14 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
             notifiBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
 
         if (notificationManager != null) {
-            notificationManager.notify(notificationID/*ID of notification*/, notifiBuilder.build());
+            notificationManager.notify(NOTIFICATION_ID/*ID of notification*/, notifiBuilder.build());
         }
-
-
     }
 
     public void cancellAllNotifications() {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager != null)
-            mNotificationManager.cancel(notificationID);
+            mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
     private int getNotificationIcon() {
@@ -295,10 +340,82 @@ public class LocationService extends Service implements GoogleLocationHelper.OnL
         return useWhiteIcon ? R.mipmap.notification_icon : R.mipmap.ic_launcher;
     }
 
-    /*From GoogleLocationHelper*/
-    @Override
-    public void onLocation(Location location) {
-        if (location == null) return;
-        Log.i(TAG, "Location service ->" + location.toString());
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequestPeriodic;
+    private SettingsClient mSettingsClient;
+    private LocationBroadcastForOreo locationBroadcastForOreo;
+
+    private void init() {
+        if (mFusedLocationClient == null)
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (mSettingsClient == null)
+            mSettingsClient = LocationServices.getSettingsClient(this);
+
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(GoogleLocationHelper.UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setSmallestDisplacement(5);
+        mLocationRequest.setFastestInterval(GoogleLocationHelper.FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        mLocationRequestPeriodic = mLocationRequest;
+        LocationSettingsRequest mLocationSettingsRequestPeriodic = builder.build();
+
+        mSettingsClient
+                .checkLocationSettings(mLocationSettingsRequestPeriodic)
+                .addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+                    @Override
+                    public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                        Log.i(TAG, "All location settings are satisfied.");
+
+                        if (!GoogleLocationHelper.checkLocationPermission(LocationService.this)) {
+                            Log.i(TAG, "Permission Denied!! Location will not update");
+                            return;
+                        }
+
+                        Log.i(TAG, "Starting location updates, periodic");
+
+                        //Toast.makeText(context.getApplicationContext(), "Started location updates!", Toast.LENGTH_SHORT).show();
+                        mFusedLocationClient.requestLocationUpdates(mLocationRequestPeriodic,
+                                getPendingBroadcast(LocationService.this));
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        int statusCode = ((ApiException) e).getStatusCode();
+                        switch (statusCode) {
+                            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                                Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade " +
+                                        "location settings ");
+                                break;
+                            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                                String errorMessage = "Location settings are inadequate, and cannot be " +
+                                        "fixed here. Fix in Settings.";
+                                Log.e(TAG, errorMessage);
+                                //Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    public static PendingIntent getPendingBroadcast(Context context) {
+        Intent intent = new Intent(context, LocationBroadcastForOreo.class);
+        intent.setAction(LocationBroadcastForOreo.ACTION_PROCESS_UPDATES);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private void removeLocationUpdates() {
+        if (mFusedLocationClient != null) {
+            mFusedLocationClient
+                    .removeLocationUpdates(getPendingBroadcast(LocationService.this))
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.i(TAG, "Location updates stopped. Periodic");
+                        }
+                    });
+        }
     }
 }
