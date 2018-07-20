@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class LocationService extends Service {
@@ -51,6 +52,7 @@ public class LocationService extends Service {
 
     private Data data;
     private static final int NOTIFICATION_ID = 1011;
+    private static final int ACCURACY = 700;
     private Handler locationHandle = new Handler();
     private Runnable locationRunable;
     private LocationDatabase db;
@@ -71,6 +73,8 @@ public class LocationService extends Service {
 
     @Override
     public void onCreate() {
+
+        createNotificationIcon();
 
         db = new LocationDatabase(ApplicationController.getInstance());
 
@@ -95,7 +99,6 @@ public class LocationService extends Service {
 
         /*initHandler();*/
         initLocationHandler();
-        createNotificationIcon();
         addWakeLock();
         // mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
         // CommonClass.getTrackingInterval(getBaseContext()), 0, this);
@@ -143,39 +146,55 @@ public class LocationService extends Service {
             @Override
             public void run() {
                 if (data.isRunning()) {
-                    /*try {*/
-                    Location location = GoogleLocationHelper.mCurrentLocation;
-                    if (location == null || location.getAccuracy() > 700) {
-                        locationHandle.postDelayed(this, 3000);
-                        return;
+
+                    final ArrayList<Location> listLocations = new ArrayList<>();
+                    if (GoogleLocationHelper.mLocations != null) {
+                        listLocations.addAll(GoogleLocationHelper.mLocations);
                     }
+                    if (listLocations.size() > 0) {
+                        if (addLocation(GoogleLocationHelper.mCurrentLocation)) {
+                            //do not schedule, already scheduled
+                            return;
+                        }
+                    }
+                }
+                locationHandle.postDelayed(this, 3000/*
+                        CommonClass.getTrackingInterval(getBaseContext())*/);
+            }
+
+            private boolean addLocation(Location location) {
+                //Location location = GoogleLocationHelper.mCurrentLocation;
+                if (location == null || location.getAccuracy() > ACCURACY) {
+                    locationHandle.postDelayed(this, 3000);
+                    return true;
+                }
 
                         /* double lat = tracker.getLatitude();
                         double longt = tracker.getLongitude();
                         double speed = tracker.getSpeed();*/
 
-                    /*Log.d("asd", "gps tracker = " + lat + " long " + longt);*/
-                    /*Location location = tracker.getLastLocation();*/
+                /*Log.d("asd", "gps tracker = " + lat + " long " + longt);*/
+                /*Location location = tracker.getLastLocation();*/
 
-                    if (data.isFirstTime()) {
-                        mLastLocation.setLatitude(location.getLatitude());
-                        mLastLocation.setLongitude(location.getLongitude());
-                        data.setFirstTime(false);
-                    } else {
-                        if (mLastLocation.getLatitude() == location.getLatitude()
-                                && mLastLocation.getLongitude() == location.getLongitude()) {
-                            //both are same, no need to enter to database
-                            locationHandle.postDelayed(this, 3000);
-                            return;
-                        }
-                    }
-
+                if (data.isFirstTime()) {
                     mLastLocation.setLatitude(location.getLatitude());
                     mLastLocation.setLongitude(location.getLongitude());
+                    data.setFirstTime(false);
+                } else {
+                    if (mLastLocation.getLatitude() == location.getLatitude()
+                            && mLastLocation.getLongitude() == location.getLongitude()) {
+                        //both are same, no need to enter to database
+                        locationHandle.postDelayed(this, 3000);
+                        return true;
+                    }
+                }
 
-                    double distance = mLastLocation.distanceTo(location);
+                mLastLocation.setLatitude(location.getLatitude());
+                mLastLocation.setLongitude(location.getLongitude());
 
-                    data.addDistance(distance);
+                double distance = mLastLocation.distanceTo(location);
+
+                data.addDistance(distance);
 
 //						if (location.getAccuracy() < distance) {
 //							data.addDistance(distance);
@@ -183,46 +202,42 @@ public class LocationService extends Service {
 //							lastLon = currentLon;
 //						}
 
-                    if (location.hasSpeed()) {
-                        data.setCurSpeed(location.getSpeed() * 3.6);
-                    }
-
-                    Log.d(TAG, "distance = " + data.getDistance());
-                    Log.i(TAG, "kp Duration = " + data.getTime());
-
-                    if (!CommonClass.getLocationServicePreference(
-                            ApplicationController.getInstance()).equalsIgnoreCase("false")) {
-
-                        db.INSERT_NEW_MESSAGE(CommonClass.getUserpreference(ApplicationController.getInstance()).user_id,
-                                String.valueOf(location.getLatitude()),
-                                String.valueOf(location.getLongitude()),
-                                "",
-                                CommonClass.getCurrentTimeStamp(),
-                                data.getCurrentSpeedKM(),
-                                "" + data.getAverageSpeedInKM(),
-                                "" + data.getDistanceKm(),
-                                "" + (SystemClock.elapsedRealtime() - data.getTime()));
-
-                        writeFile("" + String.valueOf(location.getLatitude()) + "," +
-                                String.valueOf(location.getLongitude()) + "\n");
-
-                        Intent intent = new Intent("com.cync.location.data"); //FILTER is a string to identify this intent
-                        intent.putExtra("latitude", location.getLatitude());
-                        intent.putExtra("longitude", location.getLongitude());
-                        intent.putExtra("duration", data.getTime());
-                        sendBroadcast(intent);
-                        Log.i(TAG, "Send broadcast for Location Update.");
-                    } else {
-                        cancellAllNotifications();
-                        db.UpdateLastRecord("" + (SystemClock.elapsedRealtime() - data.getTime()), "" + data.getDistanceKm());
-                        Log.i(TAG, "Paused location Handler");
-                    }
-                   /* } catch (Exception e) {
-                        e.printStackTrace();
-                    }*/
+                if (location.hasSpeed()) {
+                    data.setCurSpeed(location.getSpeed() * 3.6);
                 }
-                locationHandle.postDelayed(this, 3000/*
-                        CommonClass.getTrackingInterval(getBaseContext())*/);
+
+                Log.d(TAG, "distance = " + data.getDistance());
+                Log.i(TAG, "kp Duration = " + data.getTime());
+
+                if (!CommonClass.getLocationServicePreference(
+                        ApplicationController.getInstance()).equalsIgnoreCase("false")) {
+
+                    db.INSERT_NEW_MESSAGE(CommonClass.getUserpreference(ApplicationController.getInstance()).user_id,
+                            String.valueOf(location.getLatitude()),
+                            String.valueOf(location.getLongitude()),
+                            "",
+                            CommonClass.getCurrentTimeStamp(),
+                            data.getCurrentSpeedKM(),
+                            "" + data.getAverageSpeedInKM(),
+                            "" + data.getDistanceKm(),
+                            "" + (SystemClock.elapsedRealtime() - data.getTime()));
+
+                    writeFile("" + String.valueOf(location.getLatitude()) + "," +
+                            String.valueOf(location.getLongitude()) + "\n");
+
+                    Intent intent = new Intent("com.cync.location.data");
+                    //FILTER is a string to identify this intent
+                    intent.putExtra("latitude", location.getLatitude());
+                    intent.putExtra("longitude", location.getLongitude());
+                    intent.putExtra("duration", data.getTime());
+                    sendBroadcast(intent);
+                    Log.i(TAG, "Send broadcast for Location Update.");
+                } else {
+                    cancellAllNotifications();
+                    db.UpdateLastRecord("" + (SystemClock.elapsedRealtime() - data.getTime()), "" + data.getDistanceKm());
+                    Log.i(TAG, "Paused location Handler");
+                }
+                return false;
             }
         };
         locationHandle.postDelayed(locationRunable, 3000/*
@@ -325,7 +340,8 @@ public class LocationService extends Service {
             notifiBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
 
         if (notificationManager != null) {
-            notificationManager.notify(NOTIFICATION_ID/*ID of notification*/, notifiBuilder.build());
+            startForeground(NOTIFICATION_ID, notifiBuilder.build());
+            //notificationManager.notify(NOTIFICATION_ID/*ID of notification*/, notifiBuilder.build());
         }
     }
 

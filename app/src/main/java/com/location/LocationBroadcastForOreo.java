@@ -3,10 +3,13 @@ package com.location;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.location.LocationResult;
 import com.utils.GoogleLocationHelper;
+
+import java.util.ArrayList;
 
 public class LocationBroadcastForOreo extends BroadcastReceiver {
     private static final String TAG = "LocationBroadForOreo";
@@ -21,6 +24,7 @@ public class LocationBroadcastForOreo extends BroadcastReceiver {
                 if (result != null) {
                     GoogleLocationHelper.mCurrentLocation = result.getLastLocation();
                     GoogleLocationHelper.mLastUpdateTime = System.currentTimeMillis();
+                    GoogleLocationHelper.mLocations = (ArrayList<Location>) result.getLocations();
                     Log.i(TAG, "OREO Location->" + GoogleLocationHelper.mCurrentLocation);
                 }
             }

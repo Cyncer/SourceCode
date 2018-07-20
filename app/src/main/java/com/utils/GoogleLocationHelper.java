@@ -29,6 +29,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class GoogleLocationHelper {
     private SettingsClient mSettingsClient;
 
     public static Location mCurrentLocation;
+    public static ArrayList<Location> mLocations;
     public static long mLastUpdateTime;
     private boolean mRequestingLocationUpdates;
 
