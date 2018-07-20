@@ -222,8 +222,8 @@ public class LocationService extends Service {
                             "" + data.getDistanceKm(),
                             "" + (SystemClock.elapsedRealtime() - data.getTime()));
 
-                    writeFile("" + String.valueOf(location.getLatitude()) + "," +
-                            String.valueOf(location.getLongitude()) + "\n");
+//                    writeFile("" + String.valueOf(location.getLatitude()) + "," +
+//                            String.valueOf(location.getLongitude()) + "\n");
 
                     Intent intent = new Intent("com.cync.location.data");
                     //FILTER is a string to identify this intent
