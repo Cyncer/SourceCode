@@ -30,7 +30,22 @@ public class LocationDatabase {
     DatabaseHelper dbhelp;
     static LocationDatabase instance;
     private final static String TABLE_LOCATION_HISTORY = "LocationHistory";
+    private int openCount = 0;
 
+
+    private static final String COL_ID = "ID";
+    private static final String COL_USER_ID = "userid";
+    private static final String COL_LATITUDE = "latitude";
+    private static final String COL_LONGITUDE = "longitude";
+    private static final String COL_STATUS = "status";
+    private static final String COL_TIMESTAMP = "timestamp";
+    private static final String COL_SPEED = "speed";
+    private static final String COL_AVGSPEED = "avgspeed";
+    private static final String COL_DISTANCE = "distance";
+    private static final String COL_DURATION = "duration";
+
+
+    private static final String QUERY_FOR_GET_ID = "select " + COL_ID + " from LocationHistory WHERE " + COL_ID + " = (SELECT MAX(" + COL_ID + ") FROM LocationHistory)";
     private static final String CREATE_LOCATION_HISTORY = "create table LocationHistory(ID INTEGER PRIMARY KEY AUTOINCREMENT, userid TEXT," +
             " latitude TEXT," +
             " longitude TEXT," +
@@ -63,50 +78,53 @@ public class LocationDatabase {
             super(con, DATABASE, null, db_version);
         }
 
+        @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(CREATE_LOCATION_HISTORY);
-
         }
 
+        @Override
         public void onUpgrade(SQLiteDatabase db, int arg1, int arg2) {
-
-
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION_HISTORY);
-
             // Create tables again
             onCreate(db);
-
         }
     }
 
-    public LocationDatabase open() throws SQLException {
+    private synchronized void open() throws SQLException {
         DatabaseLite = dbhelp.getWritableDatabase();
-        return this;
+        openCount++;
     }
 
-    public void close() {
-        dbhelp.close();
+    public synchronized void close() {
+        if (openCount <= 1)
+            dbhelp.close();
+        openCount--;
+        if (openCount < 0) {
+            openCount = 0;
+        }
     }
+
 
     public void UpdateLastRecord(String mduration, String mDistance) {
 
-        int ID = -1;
+        int id = -1;
 
         open();
-        Cursor c = DatabaseLite.rawQuery("select * from LocationHistory WHERE ID = (SELECT MAX(ID) FROM LocationHistory)", null);
+        Cursor c = DatabaseLite.rawQuery(QUERY_FOR_GET_ID, null);
 
         if (c.moveToFirst()) {
             do {
-                ID = c.getInt(c.getColumnIndex("ID"));
+                id = c.getInt(c.getColumnIndex("ID"));
             } while (c.moveToNext());
         }
         c.close();
 
-        if (ID != -1) {
+        if (id != -1) {
             ContentValues args = new ContentValues();
             args.put("duration", mduration);
             args.put("distance", mDistance);
-            int x = DatabaseLite.update(TABLE_LOCATION_HISTORY, args, "ID=" + ID, null);
+            int x = DatabaseLite.update(TABLE_LOCATION_HISTORY, args, COL_ID + " =" + id, null);
             Log.i(TAG, "UpdateLastRecord: Updated Distance = " + x);
         }
         close();
@@ -117,15 +135,15 @@ public class LocationDatabase {
         open();
 
         ContentValues initialVal = new ContentValues();
-        initialVal.put("userid", userid);
-        initialVal.put("latitude", latitude);
-        initialVal.put("longitude", longitude);
-        initialVal.put("status", status);
-        initialVal.put("timestamp", timestamp);
-        initialVal.put("speed", speed);
-        initialVal.put("avgspeed", avgspeed);
-        initialVal.put("distance", distance);
-        initialVal.put("duration", duration);
+        initialVal.put(COL_USER_ID, userid);
+        initialVal.put(COL_LATITUDE, latitude);
+        initialVal.put(COL_LONGITUDE, longitude);
+        initialVal.put(COL_STATUS, status);
+        initialVal.put(COL_TIMESTAMP, timestamp);
+        initialVal.put(COL_SPEED, speed);
+        initialVal.put(COL_AVGSPEED, avgspeed);
+        initialVal.put(COL_DISTANCE, distance);
+        initialVal.put(COL_DURATION, duration);
         DatabaseLite.insert(TABLE_LOCATION_HISTORY, null, initialVal);
 
         Log.d(TAG, "TABLE_LOCATION_HISTORY : Inserted = userid=" + userid + " lat->" + latitude + " lng->"

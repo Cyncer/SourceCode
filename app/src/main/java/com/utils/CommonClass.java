@@ -392,18 +392,12 @@ public class CommonClass {
 //}
 
     public static void setUserpreference(Context ct, UserDetail ud) {
-        // TODO Auto-generated method stub
-
-        @SuppressWarnings({"static-access", "deprecation"})
-        SharedPreferences sp = ApplicationController.getContext().getSharedPreferences("userpref", ApplicationController.getContext().MODE_PRIVATE);
+        SharedPreferences sp = ApplicationController.getContext()
+                .getSharedPreferences("userpref", Context.MODE_PRIVATE);
         SharedPreferences.Editor peditor = sp.edit();
-
         String udata = getStringDateUserFromObjectUserDetail(ApplicationController.getContext(), ud);
-
         peditor.putString(KEY_USER_DATA, udata);
-
         peditor.commit();
-
     }
 
 
@@ -423,24 +417,18 @@ public class CommonClass {
     }
 
     public static UserDetail getUserpreference(Context ct) {
-        // TODO Auto-generated method stub
-        @SuppressWarnings({"static-access", "deprecation"})
-        SharedPreferences sp = ApplicationController.getContext().getSharedPreferences("userpref", ApplicationController.getContext().MODE_PRIVATE);
+        SharedPreferences sp = ApplicationController.getContext().getSharedPreferences("userpref", Context.MODE_PRIVATE);
 
         String tmp = sp.getString(KEY_USER_DATA, "null");
 
         UserDetail mUserDetail = null;
         if (tmp.equalsIgnoreCase("null")) {
             mUserDetail = new UserDetail("null", "null", "null", "null", "null", "null", true, true, false);
-
         } else {
             mUserDetail = getObjectDateUserFRomStringUserDetail(ApplicationController.getContext(), sp.getString(KEY_USER_DATA, "null"));
         }
-
         return mUserDetail;
-
     }
-
 
     public static String getCSVFromArrayList(ArrayList<String> ids) {
         String csv = "";
@@ -568,8 +556,7 @@ public class CommonClass {
     public static String getCurrentTimeStamp() {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-            String currentTimeStamp = dateFormat.format(new Date()); // Find
-            return currentTimeStamp;
+            return dateFormat.format(new Date());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -1748,29 +1735,17 @@ public class CommonClass {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
-
     public static void setRideIds(Context ct, String ride_ids) {
-
-
         SharedPreferences sp = ct.getSharedPreferences("ridepref",
                 ct.MODE_PRIVATE);
-
         SharedPreferences.Editor peditor = sp.edit();
         peditor.putString(KEY_RIDE_ID, ride_ids);
-
-
         peditor.commit();
-
-
     }
-
 
     public static String getRideIds(Context ct) {
         SharedPreferences sp = ct.getSharedPreferences("ridepref",
                 Context.MODE_PRIVATE);
-        String name = sp.getString(KEY_RIDE_ID, "");
-        return name;
+        return sp.getString(KEY_RIDE_ID, "");
     }
-
-
 }

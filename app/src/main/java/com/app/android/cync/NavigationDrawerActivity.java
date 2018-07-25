@@ -878,4 +878,10 @@ public class NavigationDrawerActivity extends AppCompatActivity implements Fragm
             GoogleLocationHelper.getGoogleLocationHelper(this).onActivityResult(requestCode, resultCode, data);
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        GoogleLocationHelper.getGoogleLocationHelper(this).onDestroy(this);
+    }
 }

@@ -143,11 +143,16 @@ public class LocationService extends Service {
     private void initLocationHandler() {
         locationHandle = new Handler();
         locationRunable = new Runnable() {
+
+            final ArrayList<Location> listLocations = new ArrayList<>();
+            double distance;
+
             @Override
             public void run() {
                 if (data.isRunning()) {
 
-                    final ArrayList<Location> listLocations = new ArrayList<>();
+                    listLocations.clear();
+
                     if (GoogleLocationHelper.mLocations != null) {
                         listLocations.addAll(GoogleLocationHelper.mLocations);
                     }
@@ -158,14 +163,14 @@ public class LocationService extends Service {
                         }
                     }
                 }
-                locationHandle.postDelayed(this, 3000/*
+                locationHandle.postDelayed(this, 1000/*
                         CommonClass.getTrackingInterval(getBaseContext())*/);
             }
 
             private boolean addLocation(Location location) {
-                //Location location = GoogleLocationHelper.mCurrentLocation;
+
                 if (location == null || location.getAccuracy() > ACCURACY) {
-                    locationHandle.postDelayed(this, 3000);
+                    locationHandle.postDelayed(this, 1000);
                     return true;
                 }
 
@@ -184,16 +189,14 @@ public class LocationService extends Service {
                     if (mLastLocation.getLatitude() == location.getLatitude()
                             && mLastLocation.getLongitude() == location.getLongitude()) {
                         //both are same, no need to enter to database
-                        locationHandle.postDelayed(this, 3000);
+                        locationHandle.postDelayed(this, 1000);
                         return true;
                     }
                 }
-
                 mLastLocation.setLatitude(location.getLatitude());
                 mLastLocation.setLongitude(location.getLongitude());
 
-                double distance = mLastLocation.distanceTo(location);
-
+                distance = mLastLocation.distanceTo(location);
                 data.addDistance(distance);
 
 //						if (location.getAccuracy() < distance) {
@@ -203,7 +206,7 @@ public class LocationService extends Service {
 //						}
 
                 if (location.hasSpeed()) {
-                    data.setCurSpeed(location.getSpeed() * 3.6);
+                    data.setCurSpeed(location.getSpeed() * 3.6d);
                 }
 
                 Log.d(TAG, "distance = " + data.getDistance());
@@ -230,6 +233,7 @@ public class LocationService extends Service {
                     intent.putExtra("latitude", location.getLatitude());
                     intent.putExtra("longitude", location.getLongitude());
                     intent.putExtra("duration", data.getTime());
+                    intent.putExtra("bearing", location.getBearing());
                     sendBroadcast(intent);
                     Log.i(TAG, "Send broadcast for Location Update.");
                 } else {
@@ -240,8 +244,7 @@ public class LocationService extends Service {
                 return false;
             }
         };
-        locationHandle.postDelayed(locationRunable, 3000/*
-                CommonClass.getTrackingInterval(getBaseContext())*/);
+        locationHandle.postDelayed(locationRunable, 2000);
     }
 
     public void writeFile(String mValue) {

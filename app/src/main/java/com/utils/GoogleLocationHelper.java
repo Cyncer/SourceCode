@@ -11,7 +11,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -42,9 +41,9 @@ public class GoogleLocationHelper {
     private static HashMap<Context, GoogleLocationHelper> helperHashMap = null;
 
     // location updates interval - 5sec
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
     // fastest updates interval - 3 sec
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
 
     private static final int REQUEST_CHECK_SETTINGS_SINGLE = 1011;
     private static final int REQUEST_CHECK_SETTINGS_PERIODIC = 1012;
@@ -93,7 +92,7 @@ public class GoogleLocationHelper {
         }
     }
 
-    public void singleLocation(OnLocation onLocationSingle) {
+    public void singleLocation(final OnLocation onLocationSingle) {
         if (!checkLocationPermission(context)) {
             return;
         }
@@ -201,9 +200,22 @@ public class GoogleLocationHelper {
                 }
             }
 
+            it = callBacksSingle.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                //System.out.println(pair.getKey() + " = " + pair.getValue());
+                if (pair.getValue() != null) {
+                    ((OnLocation) pair.getValue()).onLocation(locationResult.getLastLocation());
+                }
+                //notify and remove call backs
+                it.remove();
+            }
+
             if (callBacksPeriodic.size() == 0) {
                 stopLocationUpdates(true);
             }
+            //stop after getting single location
+            stopLocationUpdates(false);
         }
     };
 
@@ -226,8 +238,8 @@ public class GoogleLocationHelper {
                     CommonClass.KEY_PREFERENCE_CURRENT_LOCATION,
                     CommonClass.KEY_Current_Lng, String.valueOf(mCurrentLocation.getLongitude()));
 
-            Toast.makeText(context, "Location found successfully. You can now proceed.",
-                    Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "Location found successfully. You can now proceed.",
+            //        Toast.LENGTH_SHORT).show();
 
             Log.i(TAG, "Location found ->" + mCurrentLocation.toString());
 

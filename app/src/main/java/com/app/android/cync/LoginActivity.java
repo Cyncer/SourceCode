@@ -262,7 +262,7 @@ public class LoginActivity extends Activity {
                     return;
                 }
 
-                if (GoogleLocationHelper.getLocationDirect()==null) {
+                if (GoogleLocationHelper.getLocationDirect() == null) {
                     GoogleLocationHelper.getGoogleLocationHelper(LoginActivity.this).singleLocation(null);
                     Toast.makeText(LoginActivity.this, "Getting your location...", Toast.LENGTH_LONG).show();
                     return;
@@ -427,7 +427,6 @@ public class LoginActivity extends Activity {
 //                        CommonClass.setChatUserpreference(LoginActivity.this,chat_username,chat_password);
                         CommonClass.setChatUserpreference(LoginActivity.this, "cync_" + user_id, "cync_" + user_id);
                         if (login_type.equalsIgnoreCase("facebook")) {
-
                             if (permission) {
                                 CommonClass.setUserpreference(LoginActivity.this, ud);
                                 openNavigation();

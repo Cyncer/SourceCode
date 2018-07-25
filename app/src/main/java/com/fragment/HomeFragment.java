@@ -30,7 +30,6 @@ import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,6 +67,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -113,12 +113,11 @@ public class HomeFragment extends BaseContainerFragment implements
         View.OnClickListener, OnMapReadyCallback, GoogleLocationHelper.OnLocation {
 
     private static final int SHARE_CODE = 104;
-    boolean onlyOnce = true;
-    ArrayList<Ride> mRideList = new ArrayList<>();
-    ArrayList<String> mRideIdList = new ArrayList<>();
+    private boolean onlyOnce = true;
+    private ArrayList<Ride> mRideList = new ArrayList<>();
+    private ArrayList<String> mRideIdList = new ArrayList<>();
 
-    int colorList[] = {
-
+    private int colorList[] = {
             Color.parseColor("#004483"),
             Color.parseColor("#f80905"),
             Color.parseColor("#026c00"),
@@ -129,46 +128,45 @@ public class HomeFragment extends BaseContainerFragment implements
             Color.parseColor("#2800a7"),
             Color.parseColor("#74a700"),
             Color.parseColor("#008092")
-
     };
-    boolean isTimeOk = false;
-    int[] interval = {5, 15, 30, 60, 5, 15, 30, 1, 1};
-    int selectedinterval;
+    private boolean isTimeOk = false;
+    private int[] interval = {5, 15, 30, 60, 5, 15, 30, 1, 1};
+    private int selectedinterval;
 
-    BroadcastReceiver updateUIReciver;
+    //private BroadcastReceiver updateUIReciver;
     private static LocationDatabase db;
     private ImageView imgPlayPause, imgFinish;
 
-    RelativeLayout rlTrack;
+    private RelativeLayout rlTrack;
 
-    int deletedIndex = -1;
-    LatLngBounds.Builder mybuilder = new LatLngBounds.Builder();
-    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+    private int deletedIndex = -1;
+    private LatLngBounds.Builder mybuilder = new LatLngBounds.Builder();
+    private LatLngBounds.Builder builder = new LatLngBounds.Builder();
     //-------
-    private static long INTERVAL = 1000 * 20;
-    private static long FASTEST_INTERVAL = 1000 * 20;
     private static final String TAG = "LocationActivity";
     //------- Google Map
-    MapView mapView;
-    GoogleMap googleMap;
+    private MapView mapView;
+    private GoogleMap googleMap;
     /*GPSTracker gps;*/
-    ImageView imgMyLocation;
-    LocationManager mLocationManager;
+    private ImageView imgMyLocation;
+    private LocationManager mLocationManager;
 
-    List<LatLng> latLngList = new ArrayList<LatLng>();
-    ArrayList<UserDetail> arrayList;
-    boolean isGroupLocation = false, showCurrLoc = true;
-    LatLng latLng;
+    private List<LatLng> latLngList = new ArrayList<LatLng>();
+    private ArrayList<UserDetail> arrayList;
+    private boolean isGroupLocation = false, showCurrLoc = true;
+    private LatLng latLng;
 
     private RequestQueue mQueue;
     private String groupId;
     private RelativeLayout rlTitle;
     private ImageView ivBack;
     private HashMap<Marker, Integer> mHashMap = new HashMap<Marker, Integer>();
-    Marker markerLoginUser = null;
-    ViewGroup rootViewMain;
-    String ride_id = "";
+    private Marker markerLoginUser = null;
+    private ViewGroup rootViewMain;
+    private String ride_id = "";
     private Activity activity;
+    private Polyline mPolyline;
+    private boolean isBearingRouteRunning;
 
     public HomeFragment() {
     }
@@ -256,7 +254,7 @@ public class HomeFragment extends BaseContainerFragment implements
             ex.printStackTrace();
         }
 
-        IntentFilter filter = new IntentFilter();
+       /* IntentFilter filter = new IntentFilter();
         filter.addAction("com.inanny.action");
         updateUIReciver = new BroadcastReceiver() {
 
@@ -271,7 +269,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
             }
         };
-        activity.registerReceiver(updateUIReciver, filter);
+        activity.registerReceiver(updateUIReciver, filter);*/
         return rootView;
     }
 
@@ -280,6 +278,16 @@ public class HomeFragment extends BaseContainerFragment implements
         googleMap = gMap;
         googleMap.getUiSettings().setAllGesturesEnabled(true);
         googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+        /*when user move map then stop auto bearing map at record running*/
+        googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int reason) {
+                if (reason == REASON_GESTURE) {
+                    isBearingRouteRunning = false;
+                }
+            }
+        });
 
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -308,9 +316,7 @@ public class HomeFragment extends BaseContainerFragment implements
         } else {
             CommonClass.ShowToast(activity, "Please enable location permission.");
         }
-        /*getDataFromWeb();*/
     }
-
 
     private void getDataFromWeb() {
         if (CommonClass.getTrackingInterval(activity) == 5000) {
@@ -371,17 +377,12 @@ public class HomeFragment extends BaseContainerFragment implements
         }
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
     public void init(View view) {
         if (isGroupLocation) {
-            rlTitle = (RelativeLayout) view.findViewById(R.id.rlTitle);
+            rlTitle = view.findViewById(R.id.rlTitle);
 
             rlTitle.setVisibility(VISIBLE);
-            ivBack = (ImageView) view.findViewById(R.id.ivBack);
+            ivBack = view.findViewById(R.id.ivBack);
             ivBack.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -394,7 +395,6 @@ public class HomeFragment extends BaseContainerFragment implements
                 view.setOnKeyListener(new View.OnKeyListener() {
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
-
                         if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
                             // handle back button's click listener
                             popFragment();
@@ -406,9 +406,7 @@ public class HomeFragment extends BaseContainerFragment implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
-
 
         mapView = view.findViewById(R.id.mapview);
         rlTrack = view.findViewById(R.id.rlTrack);
@@ -434,6 +432,11 @@ public class HomeFragment extends BaseContainerFragment implements
             Log.i(TAG, "Init: Delete Data else ");
             if (CommonClass.getLocationServiceCurrentState(activity) != 0) {
                 imgPlayPause.setImageResource(CommonClass.getLocationServiceCurrentState(activity));
+                //start service if not
+                LocationService.startService(activity);
+
+                isBearingRouteRunning = true;
+
                 if (CommonClass.getLocationServiceCurrentState(activity) == R.drawable.btn_resume) {
                     imgFinish.setVisibility(VISIBLE);
                 }
@@ -447,63 +450,23 @@ public class HomeFragment extends BaseContainerFragment implements
         imgMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (googleMap != null /*&& arrayList.size() > 0*/) {
+                if (googleMap != null) {
 
-                    if (builder != null) {
-                        if (arrayList != null && arrayList.size() > 0)
-                            builder.include(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
+                    if (CommonClass.getLocationServicePreference(activity)
+                            .equalsIgnoreCase("true")) {
+                        isBearingRouteRunning = true;
+                        return;
                     }
-//                    CameraPosition cameraPosition = new CameraPosition.Builder()
-//                            .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng)).build();
-//                    LatLngBounds bounds;
-//                    if(mybuilder!=null)
-//                    bounds= mybuilder.build();
-//                    else
-//                    bounds= builder.build();
-//
-//                    googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 35));
-
-
-                    WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
-                    Display display = wm.getDefaultDisplay();
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    display.getMetrics(metrics);
-                    int width = metrics.widthPixels;
-                    int height = metrics.heightPixels;
-
-
-                    LatLngBounds bounds;
-                    if (mybuilder != null)
-                        bounds = mybuilder.build();
-                    else
-                        bounds = builder.build();
-                    CameraUpdate yourLocation = CameraUpdateFactory.newLatLngBounds(bounds, width / 3, height / 3, 45);
-
 
                     Location l = GoogleLocationHelper.getLocationDirect();
                     if (l != null) {
                         CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
                                 .target(new LatLng(l.getLatitude(), l.getLongitude()));
-
                         cameraBuilder.zoom(14);
-
                         CameraPosition cameraPosition = cameraBuilder.build();
                         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
                         onlyOnce = false;
                     }
-
-                    /*if (arrayList.size() > 0) {
-                        CameraPosition.Builder cameraBuilder = new CameraPosition.Builder()
-                                .target(new LatLng(arrayList.get(0).dLat, arrayList.get(0).dLng));
-
-
-                        cameraBuilder.zoom(15);
-
-                        CameraPosition cameraPosition = cameraBuilder.build();
-                        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    }*/
-
                     onlyOnce = false;
                 }
             }
@@ -531,10 +494,7 @@ public class HomeFragment extends BaseContainerFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        activity.registerReceiver(receiver, new IntentFilter("com.cync.location.data"));
-
-        INTERVAL = 1000 * 20;
-        FASTEST_INTERVAL = 1000 * 20;
+        activity.registerReceiver(receiverRouteUpdater, new IntentFilter("com.cync.location.data"));
 
         GoogleLocationHelper.getGoogleLocationHelper(activity).periodicLocation(this);
 
@@ -546,7 +506,6 @@ public class HomeFragment extends BaseContainerFragment implements
         }
     }
 
-
     /**
      * Location from GoogleLocationHelper class
      */
@@ -555,26 +514,24 @@ public class HomeFragment extends BaseContainerFragment implements
         //location changed
         Log.i(TAG, "Location Periodic->" + location.toString());
 
-        if (!CommonClass.getLocationServicePreference(
-                ApplicationController.getInstance()).equalsIgnoreCase("false")) {
-            //If recording started then draw path
-            updateMarker(new LatLng(location.getLatitude(), location.getLongitude()));
-            updateCameraBearing(googleMap, location.getBearing());
-        }
-    }
+        boolean trackRecording = CommonClass.getLocationServicePreference(ApplicationController.getInstance())
+                .equalsIgnoreCase("true");
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        INTERVAL = 1000 * 40;
-        FASTEST_INTERVAL = 1000 * 40;
+        if (markerLoginUser != null && !trackRecording) {
+            markerLoginUser.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+
+        if (trackRecording) {
+            //If recording started then draw path
+            //updateMarker(new LatLng(location.getLatitude(), location.getLongitude()));
+            //updateCameraBearing(googleMap, location.getBearing());
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        activity.unregisterReceiver(receiver);
-        GoogleLocationHelper.getGoogleLocationHelper(activity).onDestroy(activity);
+        activity.unregisterReceiver(receiverRouteUpdater);
     }
 
     private synchronized void insertMarkers(final ArrayList<UserDetail> list) {
@@ -604,7 +561,6 @@ public class HomeFragment extends BaseContainerFragment implements
                                     imagePath = Constants.imagBaseUrl + imagePath.trim();
                             }
 
-
                             final String finalImagePath = imagePath;
                             Bitmap smallMarker = null;
                             if (finalImagePath.trim().length() > 0) {
@@ -616,17 +572,14 @@ public class HomeFragment extends BaseContainerFragment implements
                                     bmp = null;
                                 }
 
-
                                 if (bmp != null) {
                                     smallMarker = Bitmap.createScaledBitmap(bmp, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                                 } else {
-
                                     Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
                                             R.drawable.no_image);
                                     smallMarker = Bitmap.createScaledBitmap(icon, 100, 100, false);
                                     options.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-
                                 }
                             } else {
                                 Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
@@ -652,16 +605,9 @@ public class HomeFragment extends BaseContainerFragment implements
                             markerView.draw(canvas);
                             options.icon(BitmapDescriptorFactory.fromBitmap(returnedBitmap));
                         }
-//                        else {
-//                            options.icon(BitmapDescriptorFactory
-//                                    .fromResource(R.drawable.select_map_pin));
-//                        }
                     } else {
                         if (isGroupLocation) {
-
-
                             final int finalI = i;
-
                             String imagePath = list.get(finalI).getUser_image();
                             if (imagePath != null && imagePath.length() > 0) {
 
@@ -670,7 +616,6 @@ public class HomeFragment extends BaseContainerFragment implements
                                 else {
                                     imagePath = Constants.imagBaseUrl + imagePath.trim();
                                 }
-
                             }
 
                             final String finalImagePath = imagePath;
@@ -708,6 +653,7 @@ public class HomeFragment extends BaseContainerFragment implements
                                 options.icon(BitmapDescriptorFactory
                                         .fromResource(R.drawable.tmp_pin_green));
                             }
+
                             if (list.get(i).group_is_friend)
                                 markerImageView.setImageBitmap(smallMarker);
                             markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -846,17 +792,15 @@ public class HomeFragment extends BaseContainerFragment implements
                             showDetailPopupMenu(mRideList.get(index), index);
                         }
                         return true;
-                    } else
+                    } else {
                         return false;
+                    }
                 }
             });
             showCurrLoc = false;
 
             if (!isGroupLocation) {
-                List<LatLng> lList = db.getLocationList();
-//                if(markerLoginUser!=null)
-//                lList.add(markerLoginUser.getPosition());
-                drawPolyLineOnMapAll(lList, -1, "", "#000000", Color.parseColor("#000000"));
+                drawMyCurrentRoutePolyLineOnMap();
 
                 if (mRideList.size() > 0) {
                     for (int i = 0; i < mRideList.size(); i++) {
@@ -865,19 +809,10 @@ public class HomeFragment extends BaseContainerFragment implements
                     }
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    //    public static String timeZone()
-//    {
-//        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"), Locale.getDefault());
-//        String   timeZone = new SimpleDateFormat("Z").format(calendar.getTime());
-//        return timeZone.substring(0, 3) + ":"+ timeZone.substring(3, 5);
-//    }
-
 
     // Convert a view to bitmap
     public static Bitmap createDrawableFromView(Context context, View view) {
@@ -1001,20 +936,21 @@ public class HomeFragment extends BaseContainerFragment implements
                         JSONArray jsonArray = jresObject.getJSONArray("user_friends_location");
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject latlngObj = jsonArray.getJSONObject(i);
-//                            lat = latlngObj.getString("latitude");
-//                            lng = latlngObj.getString("longitude");
                             user_id = latlngObj.getString("friend_id");
                             first_name = latlngObj.getString("first_name");
                             last_name = latlngObj.getString("last_name");
                             update_location = "";
+
                             if (latlngObj.has("is_friend"))
                                 isFriend = latlngObj.getBoolean("is_friend");
                             else
                                 isFriend = false;
+
                             if (latlngObj.has("user_image"))
                                 user_image = latlngObj.getString("user_image");
                             else
                                 user_image = "";
+
                             lat = latlngObj.getString("latitude");
                             lng = latlngObj.getString("longitude");
                             if (lat != null && lat.trim().length() > 0) {
@@ -1035,6 +971,7 @@ public class HomeFragment extends BaseContainerFragment implements
                                 }
                             else
                                 dLng = -0.1;
+
                             latLng = new LatLng(dLat, dLng);
                             if (latlngObj.has("update_location"))
                                 update_location = latlngObj.getString("update_location");
@@ -2200,17 +2137,18 @@ public class HomeFragment extends BaseContainerFragment implements
 //    }
 
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private BroadcastReceiver receiverRouteUpdater = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (!isGroupLocation) {
+            if (!isGroupLocation && intent != null && intent.getExtras() != null) {
 
                 Log.i(TAG, "Broadcast Receiver: Home Fragmemnt from Location Services");
 
                 double lati = intent.getExtras().getDouble("latitude");
                 double longi = intent.getExtras().getDouble("longitude");
                 long time = intent.getExtras().getLong("duration");
+                float bearing = intent.getExtras().getFloat("bearing");
                 time = time - CommonClass.getPauseTime(activity);
 
                 if (time > 20000) {
@@ -2218,24 +2156,21 @@ public class HomeFragment extends BaseContainerFragment implements
                     imgPlayPause.setClickable(true);
                 }
 
+                drawMyCurrentRoutePolyLineOnMap();
 
-                drawPolyLineOnMapAll(db.getLocationList(), -1, "", "#000000", Color.parseColor("#000000"));
-
-                if (mRideList.size() > 0) {
+                /*Below make uncomment if any error*/
+                /*if (mRideList.size() > 0) {
                     for (int i = 0; i < mRideList.size(); i++) {
-
                         List<LatLng> tmpList = mRideList.get(i).mDataList;
                         drawPolyLineOnMapAll(tmpList, i, "server", mRideList.get(i).color, mRideList.get(i).colorCode);
-
                     }
+                }*/
 
-                }
-
+                moveGoogleMapToBearing(new LatLng(lati, longi), bearing);
 
                 if (markerLoginUser != null) {
                     markerLoginUser.setPosition(new LatLng(lati, longi));
                 }
-
 
                 Log.i(TAG, "onReceive: === latitude : " + lati + " longitude : " + longi + " duration=" + time + " distance = " + db.getDistance());
             }
@@ -2243,6 +2178,16 @@ public class HomeFragment extends BaseContainerFragment implements
         }
     };
 
+    private void moveGoogleMapToBearing(LatLng latLng, float bearing) {
+        if (googleMap == null || !isBearingRouteRunning) return;
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(latLng)             // Sets the center of the map to current location
+                .zoom(16)                   // Sets the zoom
+                .bearing(bearing) // Sets the orientation of the camera to east
+                .tilt(0)                   // Sets the tilt of the camera to 0 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
 
     private int getColor() {
         Random random = new Random();
@@ -2287,66 +2232,70 @@ public class HomeFragment extends BaseContainerFragment implements
     }
 
 
+    public void drawMyCurrentRoutePolyLineOnMap() {
+        List<LatLng> list = db.getLocationList();
+        if (list == null || list.size() == 0) return;
+
+        if (mPolyline != null) {
+            mPolyline.remove();
+        }
+
+        PolylineOptions polyOptions = new PolylineOptions();
+        polyOptions.addAll(list);
+        Polyline polyline = googleMap.addPolyline(polyOptions);
+        polyline.setJointType(JointType.ROUND);
+        polyline.setColor(Color.BLACK);
+        polyline.setGeodesic(true);
+        polyline.setWidth(10);
+
+        mPolyline = polyline;
+    }
+
     public void drawPolyLineOnMapAll(List<LatLng> list, int index, String from, String colorCode, int color) {
 
-
         if (list.size() > 0) {
-
-
             PolylineOptions polyOptions = new PolylineOptions();
-            // polyOptions.color(Color.parseColor(colorCode));
-            //polyOptions.color(getColor());
-            polyOptions.color(color);
-
-
-            polyOptions.width(8);
-
             polyOptions.addAll(list);
             Polyline polyline = googleMap.addPolyline(polyOptions);
-            //polyline.setClickable(true);
-
-
-            LatLng first = polyline.getPoints().get(0);
-            LatLng last = polyline.getPoints().get(polyline.getPoints().size() - 1);
-
-
-            final MarkerOptions optionsStart = new MarkerOptions().position(first);
-            optionsStart.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_start_point));
-            optionsStart.title("Start point");
-            optionsStart.snippet("" + index);
-
-
-            final MarkerOptions optionsEnd = new MarkerOptions().position(last);
-            optionsEnd.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_end_point));
-            optionsEnd.title("End point");
-            optionsEnd.snippet("" + index);
-
+            polyline.setJointType(JointType.ROUND);
+            polyline.setColor(color);
+            polyline.setGeodesic(true);
+            polyline.setWidth(10);
 
             if (from.trim().length() > 0) {
-                Marker mStart = googleMap.addMarker(optionsStart);
-                Marker mEnd = googleMap.addMarker(optionsEnd);
+                LatLng first = polyline.getPoints().get(0);
+                LatLng last = polyline.getPoints().get(polyline.getPoints().size() - 1);
+
+                final MarkerOptions optionsStart = new MarkerOptions().position(first);
+                optionsStart.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_start_point));
+                optionsStart.title("Start point");
+                optionsStart.snippet("" + index);
+
+                final MarkerOptions optionsEnd = new MarkerOptions().position(last);
+                optionsEnd.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin_end_point));
+                optionsEnd.title("End point");
+                optionsEnd.snippet("" + index);
+
+                /*Marker mStart = */
+                googleMap.addMarker(optionsStart);
+                /*Marker mEnd = */
+                googleMap.addMarker(optionsEnd);
             }
 
-
-            for (LatLng latLng : list) {
+            /*for (LatLng latLng : list) {
                 builder.include(latLng);
             }
 
-            // zoomMap();
-
             if ((CommonClass.getLocationServicePreference(activity)
                     .equalsIgnoreCase("true"))) {
-
                 for (LatLng latLng : list) {
                     builder.include(latLng);
                 }
-
-
             }
 
-            if (onlyOnce)
+            if (onlyOnce) {
                 zoomMap();
-
+            }*/
 
         }
     }
@@ -2378,38 +2327,26 @@ public class HomeFragment extends BaseContainerFragment implements
 
 
     public void getRideDetail() {
-
         CommonClass.closeKeyboard(activity);
+
         ConnectionDetector cd = new ConnectionDetector(activity);
         boolean isConnected = cd.isConnectingToInternet();
         if (isConnected) {
-
-
             VolleyStringRequest apiRequest = new VolleyStringRequest(Request.Method.POST, Constants.get_rideUrl, rideDetailsSuccessLisner(),
                     mErrorLisner()) {
                 @Override
                 protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
                     HashMap<String, String> requestparam = new HashMap<>();
-
-
                     requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
-
-                    requestparam.put("ride_id", "" + CommonClass.getRideIds(activity));
-
-
+                    requestparam.put("ride_id", CommonClass.getRideIds(activity));
                     return requestparam;
                 }
-
             };
-
 
             showProgress();
             mQueue.add(apiRequest);
-
         } else {
-
             CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
-
         }
     }
 
@@ -2432,16 +2369,12 @@ public class HomeFragment extends BaseContainerFragment implements
                     Status = jresObjectMain.getBoolean("status");
                     message = CommonClass.getDataFromJson(jresObjectMain, "message");
 
-
                     if (Status) {
-
-
                         if (dialogShare != null)
                             dialogShare.dismiss();
 
                         if (jresObjectMain.has("data")) {
                             JSONArray dataArray = jresObjectMain.getJSONArray("data");
-
 
                             for (int x = 0; x < dataArray.length(); x++) {
 
@@ -2466,15 +2399,10 @@ public class HomeFragment extends BaseContainerFragment implements
 
                                 if (jData.has("lat_long")) {
                                     JSONArray lat_longArray = jData.getJSONArray("lat_long");
-
                                     for (int i = 0; i < lat_longArray.length(); i++) {
-
                                         JSONObject jmini = lat_longArray.getJSONObject(i);
-
-                                        double lat, lon;
-
-                                        lat = CommonClass.getDataFromJsonDouble2(jmini, "lat");
-                                        lon = CommonClass.getDataFromJsonDouble2(jmini, "lon");
+                                        double lat = CommonClass.getDataFromJsonDouble2(jmini, "lat");
+                                        double lon = CommonClass.getDataFromJsonDouble2(jmini, "lon");
                                         mDataList.add(new LatLng(lat, lon));
                                     }
                                 }
@@ -2487,23 +2415,13 @@ public class HomeFragment extends BaseContainerFragment implements
                                 mRideIdList.add(id);
                                 mRideList.add(mRideN);
                             }
-
                         }
-
-
                     } else {
-
-
                         // CommonClass.ShowToast(activity, message);
-
-
                     }
-
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     if (message.trim().length() == 0)
                         message = getResources().getString(R.string.s_wrong);
-
                     e.printStackTrace();
                     CommonClass.ShowToast(activity, message);
                 }
@@ -2533,27 +2451,16 @@ public class HomeFragment extends BaseContainerFragment implements
                     @Override
                     protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
                         HashMap<String, String> requestparam = new HashMap<>();
-
-
                         requestparam.put("user_id", CommonClass.getUserpreference(activity).user_id);
                         // requestparam.put("user_id", "960");
-
                         // requestparam.put("ride_id", "" + ride_id);
-
-
                         return requestparam;
                     }
-
                 };
-
-
                 showProgress();
                 mQueue.add(apiRequest);
-
             } else {
-
                 CommonClass.ShowToast(activity, getResources().getString(R.string.check_internet));
-
             }
         }
     }
@@ -2561,8 +2468,6 @@ public class HomeFragment extends BaseContainerFragment implements
 
     private com.android.volley.Response.Listener<String> myridesSuccessLisner() {
         return new com.android.volley.Response.Listener<String>() {
-
-
             @Override
             public void onResponse(String response) {
                 // TODO Auto-generated method stub
@@ -2577,19 +2482,10 @@ public class HomeFragment extends BaseContainerFragment implements
                     Status = jresObjectMain.getBoolean("status");
                     message = CommonClass.getDataFromJson(jresObjectMain, "message");
 
-
                     if (Status) {
-
-
                         if (jresObjectMain.has("data")) {
-
-
                             JSONArray dataArray = jresObjectMain.getJSONArray("data");
-
-
                             for (int x = 0; x < dataArray.length(); x++) {
-
-
                                 String id, user_id, ride_name, ride_type, ride_difficulty, distance, duration, top_speed, avg_speed, date_added,
                                         share_ride, status;
                                 ArrayList<LatLng> mDataList = new ArrayList<>();
@@ -2611,17 +2507,10 @@ public class HomeFragment extends BaseContainerFragment implements
 
                                 if (jData.has("lat_long")) {
                                     JSONArray lat_longArray = jData.getJSONArray("lat_long");
-
                                     for (int i = 0; i < lat_longArray.length(); i++) {
-
                                         JSONObject jmini = lat_longArray.getJSONObject(i);
-
-                                        double lat, lon;
-
-                                        lat = CommonClass.getDataFromJsonDouble2(jmini, "lat");
-                                        lon = CommonClass.getDataFromJsonDouble2(jmini, "lon");
-
-
+                                        double lat = CommonClass.getDataFromJsonDouble2(jmini, "lat");
+                                        double lon = CommonClass.getDataFromJsonDouble2(jmini, "lon");
                                         mDataList.add(new LatLng(lat, lon));
                                     }
                                 }
@@ -2636,21 +2525,11 @@ public class HomeFragment extends BaseContainerFragment implements
                                 mRideList.add(mRideN);
                                 mRideIdList.add(id);
                             }
-
-
                         }
-
-
                     } else {
-
-
                         CommonClass.ShowToast(activity, message);
-
-
                     }
-
                     Log.i(TAG, "onResponse: ===>>>> " + mRideList.size());
-
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     if (message.trim().length() == 0)
@@ -2662,8 +2541,6 @@ public class HomeFragment extends BaseContainerFragment implements
                 updateMarker(new LatLng(GoogleLocationHelper.getLocationDirect().getLatitude()
                         , GoogleLocationHelper.getLocationDirect().getLongitude()));
             }
-
-
         };
     }
 

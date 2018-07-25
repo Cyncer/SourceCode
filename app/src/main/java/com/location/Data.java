@@ -28,7 +28,7 @@ public class Data {
         timeStopped = 0;
     }
 
-    public void addDistance(double distance) {
+    public void addDistance(final double distance) {
         distanceM = distanceM + distance;
         distanceKm = distanceM / 1000f;
     }
