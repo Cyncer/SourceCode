@@ -96,6 +96,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -167,6 +168,8 @@ public class HomeFragment extends BaseContainerFragment implements
     private Activity activity;
     private Polyline mPolyline;
     private boolean isBearingRouteRunning;
+
+    private HashMap<Integer, Polyline> mapPolyline = new HashMap<>();
 
     public HomeFragment() {
     }
@@ -801,13 +804,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
             if (!isGroupLocation) {
                 drawMyCurrentRoutePolyLineOnMap();
-
-                if (mRideList.size() > 0) {
-                    for (int i = 0; i < mRideList.size(); i++) {
-                        List<LatLng> tmpList = mRideList.get(i).mDataList;
-                        drawPolyLineOnMapAll(tmpList, i, "server", mRideList.get(i).color, mRideList.get(i).colorCode);
-                    }
-                }
+                drawRideRoutePolylineOnMap();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2020,6 +2017,7 @@ public class HomeFragment extends BaseContainerFragment implements
 
                         mRideList.remove(deletedIndex);
                         mRideIdList.remove(deletedIndex);
+                        drawRideRoutePolylineOnMap();
                     } else {
                         CommonClass.ShowToast(activity, message);
                     }
@@ -2246,21 +2244,45 @@ public class HomeFragment extends BaseContainerFragment implements
         polyline.setJointType(JointType.ROUND);
         polyline.setColor(Color.BLACK);
         polyline.setGeodesic(true);
-        polyline.setWidth(10);
+        polyline.setWidth(12);
 
         mPolyline = polyline;
     }
 
-    public void drawPolyLineOnMapAll(List<LatLng> list, int index, String from, String colorCode, int color) {
+    public void drawRideRoutePolylineOnMap() {
+        removeAllPolyLine();
+        if (mRideList != null && mRideList.size() > 0) {
+            for (int i = 0; i < mRideList.size(); i++) {
+                List<LatLng> tmpList = mRideList.get(i).mDataList;
+                drawPolyLineOnMapAll(tmpList, i, "server", mRideList.get(i).colorCode);
+            }
+        }
+    }
 
-        if (list.size() > 0) {
+    private void removeAllPolyLine() {
+        if (mapPolyline != null) {
+            Iterator it = mapPolyline.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                if (pair.getValue() != null)
+                    ((Polyline) pair.getValue()).remove();
+                it.remove();
+            }
+        }
+    }
+
+    public void drawPolyLineOnMapAll(List<LatLng> list, int index, String from, int color) {
+
+        if (list != null && list.size() > 0) {
             PolylineOptions polyOptions = new PolylineOptions();
             polyOptions.addAll(list);
-            Polyline polyline = googleMap.addPolyline(polyOptions);
+            final Polyline polyline = googleMap.addPolyline(polyOptions);
             polyline.setJointType(JointType.ROUND);
             polyline.setColor(color);
             polyline.setGeodesic(true);
             polyline.setWidth(10);
+            if (mapPolyline != null)
+                mapPolyline.put(polyline.hashCode(), polyline);
 
             if (from.trim().length() > 0) {
                 LatLng first = polyline.getPoints().get(0);

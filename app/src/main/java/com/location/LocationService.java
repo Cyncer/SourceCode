@@ -90,6 +90,7 @@ public class LocationService extends Service {
         Log.d(TAG, "rebindCalled last distance = " + CommonClass.getPastDistance(ApplicationController.getInstance()));
         data = new Data();
         data.setRunning(true);
+        data.addDistance(fDistance * 1000);
         data.setFirstTime(true);
         long time = SystemClock.elapsedRealtime();
         data.setTime(time);
@@ -193,11 +194,15 @@ public class LocationService extends Service {
                         return true;
                     }
                 }
-                mLastLocation.setLatitude(location.getLatitude());
-                mLastLocation.setLongitude(location.getLongitude());
+
 
                 distance = mLastLocation.distanceTo(location);
                 data.addDistance(distance);
+
+                mLastLocation.setLatitude(location.getLatitude());
+                mLastLocation.setLongitude(location.getLongitude());
+                //mLastLocation = location;
+
 
 //						if (location.getAccuracy() < distance) {
 //							data.addDistance(distance);
